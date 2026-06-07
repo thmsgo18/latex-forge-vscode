@@ -1,0 +1,54 @@
+{
+  "name": "latex-forge-vscode",
+  "displayName": "LaTeX Forge",
+  "description": "Create and manage LaTeX Forge projects without leaving the editor",
+  "version": "0.0.1",
+  "publisher": "thmsgo18",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thmsgo18/latex-forge-vscode"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "latex",
+    "latex-forge",
+    "pdf",
+    "templates"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "latex-forge.createProject",
+        "title": "LaTeX Forge: Create Project"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src",
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3"
+  }
+}
