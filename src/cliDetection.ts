@@ -1,5 +1,6 @@
 import { execFile } from 'child_process';
 import * as vscode from 'vscode';
+import { getCliEnv } from './cliEnv';
 
 export const LATEX_FORGE_BINARY = 'latex-forge';
 const PYPI_URL = 'https://pypi.org/project/latex-forge/';
@@ -10,7 +11,7 @@ const PYPI_URL = 'https://pypi.org/project/latex-forge/';
  */
 export function isLatexForgeAvailable(): Promise<boolean> {
     return new Promise((resolve) => {
-        execFile(LATEX_FORGE_BINARY, ['--version'], (error) => {
+        execFile(LATEX_FORGE_BINARY, ['--version'], { env: getCliEnv() }, (error) => {
             resolve(!error);
         });
     });

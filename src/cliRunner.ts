@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import * as vscode from 'vscode';
 import { LATEX_FORGE_BINARY } from './cliDetection';
+import { getCliEnv } from './cliEnv';
 
 export interface RunResult {
     exitCode: number;
@@ -21,7 +22,7 @@ export function runLatexForge(
     return new Promise((resolve, reject) => {
         outputChannel.appendLine(`$ ${LATEX_FORGE_BINARY} ${args.join(' ')}`);
 
-        const child = spawn(LATEX_FORGE_BINARY, args, { cwd });
+        const child = spawn(LATEX_FORGE_BINARY, args, { cwd, env: getCliEnv() });
         let stdout = '';
         let stderr = '';
 
