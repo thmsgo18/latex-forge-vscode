@@ -4,6 +4,18 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-06-07
+
+### Fixed
+
+- The `latex-forge` binary could fail to be detected (and commands could fail to run) on
+  the very first launch when VS Code was started from Finder, the Dock, or Spotlight: the
+  editor starts with a minimal `PATH` from the OS and its own resolution of the user's
+  shell `PATH` can time out with heavier shell setups (pyenv, nvm, etc.), leaving
+  `~/.local/bin` — pipx's default install location — out of the extension host's `PATH`
+  even though the CLI was correctly installed and reachable from any terminal. The
+  extension now also looks in `~/.local/bin` when locating and running `latex-forge`.
+
 ### Added
 
 - **LaTeX Forge: Rename Project** command: pick a project folder, enter a new name, and
@@ -26,7 +38,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   tags, engine, and a category filter, plus a one-click **Install** button that runs
   `latex-forge template install` and refreshes the Templates view.
 
-## [0.0.1] - Unreleased
+## [0.0.1] - 2026-06-07
 
 ### Added
 
