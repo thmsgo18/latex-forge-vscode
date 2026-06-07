@@ -20,27 +20,63 @@ install command to your clipboard or open the PyPI page.
 
 ## Features
 
+All commands are available from the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) and
+stream their output to the **LaTeX Forge** output channel.
+
 ### LaTeX Forge: Create Project
 
-Run **LaTeX Forge: Create Project** from the Command Palette (`Cmd+Shift+P` /
-`Ctrl+Shift+P`) to:
-
-1. Pick a template from the list returned by `latex-forge list-templates`.
+1. Pick a template (built-in or user-installed).
 2. Enter a name for the new project.
 3. Choose the destination folder (defaults to your workspace folder when one is open).
 
-The extension then runs `latex-forge create` for you, streams its output to the
-**LaTeX Forge** output channel, and offers to open the generated project once it's ready.
+Runs `latex-forge create` and offers to open the generated project once it's ready.
+
+### LaTeX Forge: Rename Project
+
+Pick a project folder, enter its new name, and the extension runs `latex-forge rename`
+from inside that folder. Offers to reopen the project at its new location.
+
+### LaTeX Forge: Setup Environment
+
+Select any combination of `--check-only`, `--skip-extensions`, and `--install-tex`, and
+the extension runs `latex-forge setup` with those flags — useful for checking or
+installing your LaTeX toolchain and recommended VS Code extensions.
+
+### LaTeX Forge: List Templates
+
+Runs `latex-forge list-templates` and shows the result in the output channel.
+
+### Templates view (activity bar)
+
+A dedicated **LaTeX Forge** view in the activity bar lists built-in and user-installed
+templates (via `latex-forge template list`):
+
+- **Install Template** (toolbar button or **LaTeX Forge: Install Template** command):
+  prompts for a source (GitHub URL, ZIP URL, or local path) and an optional name, then
+  runs `latex-forge template install`.
+- **Remove Template** (inline action on user-installed templates, or the
+  **LaTeX Forge: Remove Template** command): asks for confirmation, then runs
+  `latex-forge template remove`.
+- **Refresh** reloads the list.
+
+### LaTeX Forge: Configure Defaults
+
+Reads and writes `default_template` and `default_output_dir` in `~/.latex-forge.toml`
+(the same file the CLI itself reads), through a simple menu — no manual TOML editing
+required.
 
 ## Extension Settings
 
-This extension does not contribute any settings yet.
+This extension does not contribute any VS Code settings. Defaults that influence
+`latex-forge create` (default template and output directory) live in `~/.latex-forge.toml`
+and can be managed with **LaTeX Forge: Configure Defaults**.
 
 ## Known Limitations
 
-This is an early MVP release. Only project creation is currently supported — commands for
-`rename`, `setup`, `list-templates`, and template management are planned for a future
-release.
+Project creation, renaming, setup, and template management are covered. A tree view of
+*generated projects* is not provided: the CLI has no central registry of created
+projects, and scanning the filesystem for them would mean guessing at project structure —
+logic that belongs in the CLI, not in this thin wrapper.
 
 ## Contributing
 

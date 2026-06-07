@@ -28,8 +28,77 @@
       {
         "command": "latex-forge.createProject",
         "title": "LaTeX Forge: Create Project"
+      },
+      {
+        "command": "latex-forge.renameProject",
+        "title": "LaTeX Forge: Rename Project"
+      },
+      {
+        "command": "latex-forge.setupEnvironment",
+        "title": "LaTeX Forge: Setup Environment"
+      },
+      {
+        "command": "latex-forge.listTemplates",
+        "title": "LaTeX Forge: List Templates"
+      },
+      {
+        "command": "latex-forge.installTemplate",
+        "title": "LaTeX Forge: Install Template",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "latex-forge.removeTemplate",
+        "title": "LaTeX Forge: Remove Template",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "latex-forge.refreshTemplates",
+        "title": "LaTeX Forge: Refresh Templates",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "latex-forge.configureDefaults",
+        "title": "LaTeX Forge: Configure Defaults"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "latexForge",
+          "title": "LaTeX Forge",
+          "icon": "media/activity-bar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "latexForge": [
+        {
+          "id": "latexForgeTemplates",
+          "name": "Templates"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "latex-forge.installTemplate",
+          "when": "view == latexForgeTemplates",
+          "group": "navigation@1"
+        },
+        {
+          "command": "latex-forge.refreshTemplates",
+          "when": "view == latexForgeTemplates",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "latex-forge.removeTemplate",
+          "when": "view == latexForgeTemplates && viewItem == latexForgeUserTemplate",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -50,5 +119,8 @@
     "glob": "^10.3.10",
     "mocha": "^10.2.0",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5"
   }
 }

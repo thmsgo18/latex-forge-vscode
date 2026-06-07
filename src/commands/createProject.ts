@@ -2,48 +2,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
-
-interface TemplateItem extends vscode.QuickPickItem {
-    name: string;
-}
+import { pickTemplate } from '../templates';
 
 const PROJECT_NAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
-
-function parseTemplateList(stdout: string): TemplateItem[] {
-    const items: TemplateItem[] = [];
-
-    for (const line of stdout.split('\n')) {
-        const match = line.match(/^\s*(\S+)\s+(.+?)\s*$/);
-        if (!match) {
-            continue;
-        }
-        const [, name, description] = match;
-        items.push({ name, label: name, description });
-    }
-
-    return items;
-}
-
-async function pickTemplate(outputChannel: vscode.OutputChannel): Promise<string | undefined> {
-    const result = await runLatexForge(['list-templates'], { outputChannel });
-    if (result.exitCode !== 0) {
-        await vscode.window.showErrorMessage('Failed to list LaTeX Forge templates. See the "LaTeX Forge" output channel for details.');
-        return undefined;
-    }
-
-    const templates = parseTemplateList(result.stdout);
-    if (templates.length === 0) {
-        await vscode.window.showErrorMessage('No LaTeX Forge templates were found.');
-        return undefined;
-    }
-
-    const selected = await vscode.window.showQuickPick(templates, {
-        title: 'LaTeX Forge: Create Project',
-        placeHolder: 'Select a template'
-    });
-
-    return selected?.name;
-}
 
 async function askProjectName(): Promise<string | undefined> {
     return vscode.window.showInputBox({
@@ -95,7 +56,7 @@ export async function createProjectCommand(outputChannel: vscode.OutputChannel):
         return;
     }
 
-    const template = await pickTemplate(outputChannel);
+    const template = await pickTemplate(outputChannel, { title: 'LaTeX Forge: Create Project' });
     if (!template) {
         return;
     }

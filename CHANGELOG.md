@@ -2,6 +2,26 @@
 
 All notable changes to the "LaTeX Forge" extension will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **LaTeX Forge: Rename Project** command: pick a project folder, enter a new name, and
+  run `latex-forge rename` from inside it.
+- **LaTeX Forge: Setup Environment** command: run `latex-forge setup` with any
+  combination of `--check-only`, `--skip-extensions`, and `--install-tex`.
+- **LaTeX Forge: List Templates** command: run `latex-forge list-templates` and show the
+  result in the output channel.
+- **Templates view** in a new "LaTeX Forge" activity bar container, listing built-in and
+  user-installed templates via `latex-forge template list`, with toolbar actions to
+  install or refresh, and an inline action to remove user-installed templates.
+- **LaTeX Forge: Install Template** and **LaTeX Forge: Remove Template** commands wrapping
+  `latex-forge template install` / `template remove`.
+- **LaTeX Forge: Configure Defaults** command: read and write `default_template` and
+  `default_output_dir` in `~/.latex-forge.toml` through a simple menu.
+- **LaTeX Forge: Create Project** now lists user-installed templates alongside built-in
+  ones (previously built-in only).
+
 ## [0.0.1] - Unreleased
 
 ### Added

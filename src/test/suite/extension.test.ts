@@ -13,8 +13,28 @@ suite('LaTeX Forge extension', () => {
         assert.strictEqual(extension!.isActive, true);
     });
 
-    test('registers the createProject command', async () => {
+    test('registers all contributed commands', async () => {
         const commands = await vscode.commands.getCommands(true);
-        assert.ok(commands.includes('latex-forge.createProject'), 'latex-forge.createProject should be registered');
+        const expected = [
+            'latex-forge.createProject',
+            'latex-forge.renameProject',
+            'latex-forge.setupEnvironment',
+            'latex-forge.listTemplates',
+            'latex-forge.installTemplate',
+            'latex-forge.removeTemplate',
+            'latex-forge.refreshTemplates',
+            'latex-forge.configureDefaults'
+        ];
+        for (const command of expected) {
+            assert.ok(commands.includes(command), `${command} should be registered`);
+        }
+    });
+
+    test('registers the templates tree view', async () => {
+        const view = vscode.window.createTreeView('latexForgeTemplates', {
+            treeDataProvider: { getChildren: () => [], getTreeItem: (e) => e as unknown as vscode.TreeItem }
+        });
+        assert.ok(view, 'latexForgeTemplates view should be registered');
+        view.dispose();
     });
 });
