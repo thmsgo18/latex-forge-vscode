@@ -21,6 +21,10 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   `default_output_dir` in `~/.latex-forge.toml` through a simple menu.
 - **LaTeX Forge: Create Project** now lists user-installed templates alongside built-in
   ones (previously built-in only).
+- **LaTeX Forge: Browse Template Gallery** command: a webview panel listing the curated
+  templates from the `latex-forge-gallery` repository, with preview images, descriptions,
+  tags, engine, and a category filter, plus a one-click **Install** button that runs
+  `latex-forge template install` and refreshes the Templates view.
 
 ## [0.0.1] - Unreleased
 

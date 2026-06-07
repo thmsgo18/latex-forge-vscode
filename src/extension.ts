@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { browseGalleryCommand } from './commands/browseGallery';
 import { configureDefaultsCommand } from './commands/configureDefaults';
 import { createProjectCommand } from './commands/createProject';
 import { installTemplateCommand } from './commands/installTemplate';
@@ -27,6 +28,9 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('latex-forge.refreshTemplates', refreshTemplates),
         vscode.commands.registerCommand('latex-forge.installTemplate', () =>
             installTemplateCommand(outputChannel, refreshTemplates)
+        ),
+        vscode.commands.registerCommand('latex-forge.browseGallery', () =>
+            browseGalleryCommand(outputChannel, refreshTemplates)
         ),
         vscode.commands.registerCommand('latex-forge.removeTemplate', (item?: TemplateInfo) =>
             removeTemplateCommand(outputChannel, refreshTemplates, item?.name)

@@ -21,6 +21,7 @@ suite('LaTeX Forge extension', () => {
             'latex-forge.setupEnvironment',
             'latex-forge.listTemplates',
             'latex-forge.installTemplate',
+            'latex-forge.browseGallery',
             'latex-forge.removeTemplate',
             'latex-forge.refreshTemplates',
             'latex-forge.configureDefaults'

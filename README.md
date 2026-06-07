@@ -46,11 +46,24 @@ installing your LaTeX toolchain and recommended VS Code extensions.
 
 Runs `latex-forge list-templates` and shows the result in the output channel.
 
+### LaTeX Forge: Browse Template Gallery
+
+Opens a panel inside VS Code that lists the curated templates from the
+[latex-forge-gallery](https://github.com/thmsgo18/latex-forge-gallery) repository, with
+preview images, descriptions, tags, LaTeX engine, and a category filter. Selecting
+**Install** runs `latex-forge template install <url>` and refreshes the Templates view on
+success.
+
+This is the only feature that talks to the network: it fetches `gallery.json` and preview
+images from `raw.githubusercontent.com`. Everything else in the extension only talks to the
+local `latex-forge` CLI.
+
 ### Templates view (activity bar)
 
 A dedicated **LaTeX Forge** view in the activity bar lists built-in and user-installed
 templates (via `latex-forge template list`):
 
+- **Browse Template Gallery** (toolbar button): opens the gallery panel described above.
 - **Install Template** (toolbar button or **LaTeX Forge: Install Template** command):
   prompts for a source (GitHub URL, ZIP URL, or local path) and an optional name, then
   runs `latex-forge template install`.

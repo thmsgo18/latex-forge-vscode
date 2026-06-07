@@ -47,6 +47,11 @@
         "icon": "$(cloud-download)"
       },
       {
+        "command": "latex-forge.browseGallery",
+        "title": "LaTeX Forge: Browse Template Gallery",
+        "icon": "$(search)"
+      },
+      {
         "command": "latex-forge.removeTemplate",
         "title": "LaTeX Forge: Remove Template",
         "icon": "$(trash)"
@@ -81,14 +86,19 @@
     "menus": {
       "view/title": [
         {
-          "command": "latex-forge.installTemplate",
+          "command": "latex-forge.browseGallery",
           "when": "view == latexForgeTemplates",
           "group": "navigation@1"
         },
         {
-          "command": "latex-forge.refreshTemplates",
+          "command": "latex-forge.installTemplate",
           "when": "view == latexForgeTemplates",
           "group": "navigation@2"
+        },
+        {
+          "command": "latex-forge.refreshTemplates",
+          "when": "view == latexForgeTemplates",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
