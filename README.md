@@ -50,7 +50,9 @@ Runs `latex-forge list-templates` and shows the result in the output channel.
 
 Opens a panel inside VS Code that lists the curated templates from the
 [latex-forge-gallery](https://github.com/thmsgo18/latex-forge-gallery) repository, with
-preview images, descriptions, tags, LaTeX engine, and a category filter. Selecting
+preview images, descriptions, tags, LaTeX engine, and a category filter. Each card also
+offers a **Preview PDF** link (when available) to open a full-size rendered preview in your
+browser, and a **View in gallery repo** link to the template's folder on GitHub. Selecting
 **Install** runs `latex-forge template install <url>` and refreshes the Templates view on
 success.
 

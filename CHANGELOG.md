@@ -4,6 +4,22 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-06-08
+
+### Changed
+
+- The Browse Template Gallery cards' "View source" link, which opened the
+  upstream project the template was adapted from, is now a "View in gallery
+  repo" link that opens the template's own folder in the `latex-forge-gallery`
+  repository on GitHub instead — i.e. the exact location the **Install** button
+  fetches from.
+
+### Added
+
+- Gallery cards now show a "Preview PDF" link (when the gallery provides one)
+  that opens a full-size, rendered PDF preview of the template in the
+  browser — useful since the thumbnail image in the card is small.
+
 ## [0.0.4] - 2026-06-08
 
 ### Fixed

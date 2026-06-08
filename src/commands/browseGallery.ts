@@ -8,10 +8,10 @@ const GALLERY_IMAGE_HOST = 'https://raw.githubusercontent.com';
 let currentPanel: vscode.WebviewPanel | undefined;
 
 interface WebviewToExtensionMessage {
-    type: 'install' | 'refresh' | 'openSource';
+    type: 'install' | 'refresh' | 'openLink';
     name?: string;
     installUrl?: string;
-    sourceUrl?: string;
+    url?: string;
 }
 
 interface ExtensionToWebviewMessage {
@@ -56,9 +56,9 @@ export async function browseGalleryCommand(
                     await installFromGallery(panel, outputChannel, message.name, message.installUrl, onTemplateInstalled);
                 }
                 break;
-            case 'openSource':
-                if (message.sourceUrl) {
-                    await vscode.env.openExternal(vscode.Uri.parse(message.sourceUrl));
+            case 'openLink':
+                if (message.url) {
+                    await vscode.env.openExternal(vscode.Uri.parse(message.url));
                 }
                 break;
         }
@@ -186,11 +186,10 @@ function renderGallery(webview: vscode.Webview, templates: GalleryTemplate[]): s
                     });
                 });
 
-                const sourceLink = card.querySelector('.source-link');
-                if (sourceLink) {
-                    sourceLink.addEventListener('click', (event) => {
+                for (const link of card.querySelectorAll('.external-link')) {
+                    link.addEventListener('click', (event) => {
                         event.preventDefault();
-                        vscode.postMessage({ type: 'openSource', sourceUrl: card.dataset.sourceUrl });
+                        vscode.postMessage({ type: 'openLink', url: link.dataset.url });
                     });
                 }
             }
@@ -228,9 +227,13 @@ function renderCard(template: GalleryTemplate): string {
         ? `<img class="preview" src="${escapeHtml(template.preview_png)}" alt="Preview of ${escapeHtml(template.name)}" loading="lazy" />`
         : '<div class="preview preview-placeholder">No preview</div>';
 
+    const previewPdfLink = template.preview_pdf
+        ? `<a class="link external-link" data-url="${escapeHtml(template.preview_pdf)}" href="${escapeHtml(template.preview_pdf)}">Preview PDF</a>`
+        : '';
+
     return `
         <div class="card" data-name="${escapeHtml(template.name)}" data-category="${escapeHtml(template.category)}"
-             data-install-url="${escapeHtml(template.install_url)}" data-source-url="${escapeHtml(template.source_url)}">
+             data-install-url="${escapeHtml(template.install_url)}">
             ${preview}
             <div class="card-body">
                 <h3 class="card-title">${escapeHtml(template.name)}</h3>
@@ -242,7 +245,8 @@ function renderCard(template: GalleryTemplate): string {
                 <div class="tags">${tags}</div>
                 <div class="card-actions">
                     <button class="button install-button">Install</button>
-                    <a class="source-link" href="${escapeHtml(template.source_url)}">View source</a>
+                    ${previewPdfLink}
+                    <a class="link external-link" data-url="${escapeHtml(template.install_url)}" href="${escapeHtml(template.install_url)}">View in gallery repo</a>
                 </div>
                 <p class="card-status"></p>
             </div>
@@ -390,10 +394,11 @@ function renderShell(webview: vscode.Webview, body: string, script?: string): st
         .card-actions {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
             gap: 12px;
             margin-top: 4px;
         }
-        .source-link {
+        .link {
             color: var(--vscode-textLink-foreground);
             font-size: 0.85em;
             cursor: pointer;
