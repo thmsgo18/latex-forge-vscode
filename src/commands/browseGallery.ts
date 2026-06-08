@@ -151,7 +151,13 @@ function renderGallery(webview: vscode.Webview, templates: GalleryTemplate[]): s
                 let visible = 0;
                 for (const card of cards) {
                     const matches = !category || card.dataset.category === category;
-                    card.hidden = !matches;
+                    // Toggle visibility through the inline "display" style rather than
+                    // the "hidden" attribute: ".card" already sets "display: flex" with
+                    // the same selector specificity as the browser's default
+                    // "[hidden] { display: none }" rule, so the page's own rule would win
+                    // and the attribute would have no visual effect. An inline style
+                    // always wins over stylesheet rules, so this reliably hides cards.
+                    card.style.display = matches ? '' : 'none';
                     if (matches) {
                         visible++;
                     }

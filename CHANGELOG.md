@@ -4,6 +4,18 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-06-08
+
+### Fixed
+
+- The category filter in the Browse Template Gallery webview updated the result
+  counter correctly but never actually hid the non-matching cards: it toggled
+  the `hidden` attribute, which the browser implements via a `[hidden] {
+  display: none }` rule that has the exact same specificity as this page's own
+  `.card { display: flex; ... }` rule — and the page's rule, declared later,
+  won the cascade. The filter now toggles the cards' inline `display` style
+  directly, which always takes precedence over stylesheet rules.
+
 ## [0.0.3] - 2026-06-07
 
 ### Fixed
