@@ -80,15 +80,15 @@ export async function createProjectCommand(outputChannel: vscode.OutputChannel):
 
     if (result.exitCode === 0) {
         const projectPath = path.join(outputDirectory, name.trim());
-        // Open the newly created project folder immediately as the workspace root
-        // so that its .vscode/settings.json (LaTeX engine, build recipe, etc.)
-        // is always picked up, regardless of which folder was open before.
-        await vscode.window.showInformationMessage(
-            `LaTeX Forge project "${name.trim()}" created successfully. Opening…`
+        const choice = await vscode.window.showInformationMessage(
+            `LaTeX Forge project "${name.trim()}" created successfully.`,
+            'Open Project'
         );
-        await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectPath), {
-            forceNewWindow: false
-        });
+        if (choice === 'Open Project') {
+            await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectPath), {
+                forceNewWindow: false
+            });
+        }
     } else {
         await vscode.window.showErrorMessage(
             `LaTeX Forge failed to create the project (exit code ${result.exitCode}). See the "LaTeX Forge" output channel for details.`

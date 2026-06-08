@@ -6,6 +6,11 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [0.0.7] - 2026-06-08
 
+### Changed
+
+- **Create Project** reverts to showing an "Open Project" button after
+  a successful creation, rather than opening the folder automatically.
+
 ### Added
 
 - The extension now checks for a newer version of the `latex-forge` CLI on
