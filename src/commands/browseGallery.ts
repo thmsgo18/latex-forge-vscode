@@ -80,13 +80,11 @@ async function loadGallery(panel: vscode.WebviewPanel, outputChannel: vscode.Out
             panel.webview,
             `<p class="status status-error">Failed to load the template gallery.</p>
              <p class="status-detail">${escapeHtml(message)}</p>
-             <button class="button" id="retry-button">Retry</button>
-             <script nonce="${getNonce()}">
-                 const vscode = acquireVsCodeApi();
-                 document.getElementById('retry-button').addEventListener('click', () => {
-                     vscode.postMessage({ type: 'refresh' });
-                 });
-             </script>`
+             <button class="button" id="retry-button">Retry</button>`,
+            `const vscode = acquireVsCodeApi();
+             document.getElementById('retry-button').addEventListener('click', () => {
+                 vscode.postMessage({ type: 'refresh' });
+             });`
         );
     }
 }
@@ -125,8 +123,6 @@ function renderGallery(webview: vscode.Webview, templates: GalleryTemplate[]): s
 
     const cards = templates.map((template) => renderCard(template)).join('\n');
 
-    const nonce = getNonce();
-
     const body = `
         <div class="toolbar">
             <label for="category-filter">Category</label>
@@ -141,7 +137,9 @@ function renderGallery(webview: vscode.Webview, templates: GalleryTemplate[]): s
             ${cards}
         </div>
         <p class="status" id="empty-state" hidden>No templates match the selected category.</p>
-        <script nonce="${nonce}">
+    `;
+
+    const script = `
             const vscode = acquireVsCodeApi();
             const categoryFilter = document.getElementById('category-filter');
             const cards = Array.from(document.querySelectorAll('.card'));
@@ -213,10 +211,9 @@ function renderGallery(webview: vscode.Webview, templates: GalleryTemplate[]): s
                     status.className = 'card-status card-status-error';
                 }
             });
-        </script>
     `;
 
-    return renderShell(webview, body);
+    return renderShell(webview, body, script);
 }
 
 function renderCard(template: GalleryTemplate): string {
@@ -247,7 +244,11 @@ function renderCard(template: GalleryTemplate): string {
     `;
 }
 
-function renderShell(webview: vscode.Webview, body: string): string {
+function renderShell(webview: vscode.Webview, body: string, script?: string): string {
+    // The nonce must be identical in the CSP's script-src directive and in the
+    // <script> tag's nonce attribute below — generating it here, once, and
+    // reusing it in both places is what makes the inline script eligible to
+    // run under the policy.
     const nonce = getNonce();
     const csp = [
         "default-src 'none'",
@@ -255,6 +256,8 @@ function renderShell(webview: vscode.Webview, body: string): string {
         `style-src ${webview.cspSource} 'unsafe-inline'`,
         `script-src 'nonce-${nonce}'`
     ].join('; ');
+
+    const scriptTag = script ? `<script nonce="${nonce}">${script}</script>` : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -414,6 +417,7 @@ function renderShell(webview: vscode.Webview, body: string): string {
 </head>
 <body>
     ${body}
+    ${scriptTag}
 </body>
 </html>`;
 }

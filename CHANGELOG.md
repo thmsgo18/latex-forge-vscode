@@ -4,6 +4,16 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-06-07
+
+### Fixed
+
+- The Browse Template Gallery webview generated a different nonce for its
+  Content-Security-Policy than for its `<script>` tags, so the browser
+  silently blocked all of the panel's JavaScript: the category filter, result
+  counter, and Install/Refresh/Retry buttons did nothing. The webview now
+  generates a single nonce and reuses it in both places.
+
 ## [0.0.2] - 2026-06-07
 
 ### Fixed
