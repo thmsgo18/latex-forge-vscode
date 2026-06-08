@@ -7,6 +7,7 @@ import { listTemplatesCommand } from './commands/listTemplates';
 import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
+import { checkForCliUpdate } from './cliUpdater';
 import { TemplateInfo } from './templates';
 import { TemplatesTreeProvider } from './templatesTreeProvider';
 
@@ -34,8 +35,15 @@ export function activate(context: vscode.ExtensionContext): void {
         ),
         vscode.commands.registerCommand('latex-forge.removeTemplate', (item?: TemplateInfo) =>
             removeTemplateCommand(outputChannel, refreshTemplates, item?.name)
+        ),
+        vscode.commands.registerCommand('latex-forge.checkForUpdate', () =>
+            checkForCliUpdate(outputChannel, /* force */ true)
         )
     );
+
+    // Check for a CLI update silently in the background once per session.
+    // Never awaited — a slow network or an offline machine must not delay activation.
+    void checkForCliUpdate(outputChannel);
 }
 
 export function deactivate(): void {

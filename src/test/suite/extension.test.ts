@@ -24,7 +24,8 @@ suite('LaTeX Forge extension', () => {
             'latex-forge.browseGallery',
             'latex-forge.removeTemplate',
             'latex-forge.refreshTemplates',
-            'latex-forge.configureDefaults'
+            'latex-forge.configureDefaults',
+            'latex-forge.checkForUpdate'
         ];
         for (const command of expected) {
             assert.ok(commands.includes(command), `${command} should be registered`);

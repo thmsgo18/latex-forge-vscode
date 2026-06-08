@@ -4,6 +4,25 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-06-08
+
+### Added
+
+- The extension now checks for a newer version of the `latex-forge` CLI on
+  PyPI silently at startup (once per VS Code session). When an update is found
+  a notification appears offering to run `pipx upgrade latex-forge`
+  automatically, with live output in the "LaTeX Forge" channel.
+- **LaTeX Forge: Check for CLI Update** command: trigger the same check
+  manually from the Command Palette at any time — also reports "up to date"
+  when the CLI is already on the latest version.
+
+### Fixed
+
+- Added `/opt/homebrew/bin` and `/usr/local/bin` to the supplemental PATH
+  directories (previously only `~/.local/bin` was added). This ensures that
+  `pipx` installed via Homebrew on Apple Silicon Macs is found correctly when
+  running the upgrade command.
+
 ## [0.0.6] - 2026-06-08
 
 ### Changed
