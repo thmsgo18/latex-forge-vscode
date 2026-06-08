@@ -25,7 +25,10 @@ suite('LaTeX Forge extension', () => {
             'latex-forge.removeTemplate',
             'latex-forge.refreshTemplates',
             'latex-forge.configureDefaults',
-            'latex-forge.checkForUpdate'
+            'latex-forge.checkForUpdate',
+            'latex-forge.buildProject',
+            'latex-forge.cleanProject',
+            'latex-forge.openPdf'
         ];
         for (const command of expected) {
             assert.ok(commands.includes(command), `${command} should be registered`);

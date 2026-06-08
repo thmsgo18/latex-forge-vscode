@@ -2,7 +2,7 @@
   "name": "latex-forge-vscode",
   "displayName": "LaTeX Forge",
   "description": "Create and manage LaTeX Forge projects without leaving the editor",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "publisher": "thmsgo18",
   "license": "MIT",
   "repository": {
@@ -68,6 +68,21 @@
       {
         "command": "latex-forge.checkForUpdate",
         "title": "LaTeX Forge: Check for CLI Update"
+      },
+      {
+        "command": "latex-forge.buildProject",
+        "title": "LaTeX Forge: Build",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "latex-forge.cleanProject",
+        "title": "LaTeX Forge: Clean",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "latex-forge.openPdf",
+        "title": "LaTeX Forge: Open PDF",
+        "icon": "$(eye)"
       }
     ],
     "viewsContainers": {
@@ -82,13 +97,40 @@
     "views": {
       "latexForge": [
         {
+          "id": "latexForgeProject",
+          "name": "Project"
+        },
+        {
           "id": "latexForgeTemplates",
-          "name": "Templates"
+          "name": "Templates",
+          "visibility": "collapsed"
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "latexForgeProject",
+        "contents": "No folder is open.\n\nOpen a LaTeX Forge project folder to access the Build, Clean, and Open PDF tools.\n\n[Open Folder](command:vscode.openFolder)\n[Create Project](command:latex-forge.createProject)",
+        "when": "workspaceFolderCount == 0"
+      }
+    ],
     "menus": {
       "view/title": [
+        {
+          "command": "latex-forge.buildProject",
+          "when": "view == latexForgeProject && workspaceFolderCount > 0",
+          "group": "navigation@1"
+        },
+        {
+          "command": "latex-forge.cleanProject",
+          "when": "view == latexForgeProject && workspaceFolderCount > 0",
+          "group": "navigation@2"
+        },
+        {
+          "command": "latex-forge.openPdf",
+          "when": "view == latexForgeProject && workspaceFolderCount > 0",
+          "group": "navigation@3"
+        },
         {
           "command": "latex-forge.browseGallery",
           "when": "view == latexForgeTemplates",
