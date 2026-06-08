@@ -4,7 +4,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
-## [0.0.7] - 2026-06-08
+## [0.0.8] - 2026-06-08
 
 ### Changed
 
