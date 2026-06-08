@@ -16,13 +16,12 @@ export class ProjectActionItem extends vscode.TreeItem {
         this.iconPath = new vscode.ThemeIcon(codicon, color);
         this.tooltip = tooltip;
         this.command = { command: commandId, title: label };
-        // Used by the "when" clause in package.json menus.
         this.contextValue = 'projectAction';
     }
 }
 
 // ---------------------------------------------------------------------------
-// Provider
+// Singleton items (reused across refreshes)
 // ---------------------------------------------------------------------------
 
 const BUILD_ITEM = new ProjectActionItem(
@@ -49,12 +48,24 @@ const OPEN_PDF_ITEM = new ProjectActionItem(
     'Open the compiled PDF in VS Code'
 );
 
+// ---------------------------------------------------------------------------
+// Provider
+// ---------------------------------------------------------------------------
+
 export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectActionItem> {
     private readonly _onDidChangeTreeData =
         new vscode.EventEmitter<ProjectActionItem | undefined | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-    refresh(): void {
+    // Tracks whether a LaTeX project is currently open. Driven by extension.ts
+    // via setHasProject() so the tree and the VS Code context stay in sync.
+    private _hasProject = false;
+
+    setHasProject(value: boolean): void {
+        if (this._hasProject === value) {
+            return;
+        }
+        this._hasProject = value;
         this._onDidChangeTreeData.fire();
     }
 
@@ -63,11 +74,9 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectActio
     }
 
     getChildren(): ProjectActionItem[] {
-        // Return the three actions whenever a folder is open; the "viewsWelcome"
-        // contribution in package.json handles the empty-workspace placeholder.
-        if (!vscode.workspace.workspaceFolders?.length) {
-            return [];
-        }
-        return [BUILD_ITEM, CLEAN_ITEM, OPEN_PDF_ITEM];
+        // Return the three action items only when a LaTeX project is open.
+        // When _hasProject is false the tree is empty, which causes VS Code to
+        // display the matching "viewsWelcome" entry from package.json instead.
+        return this._hasProject ? [BUILD_ITEM, CLEAN_ITEM, OPEN_PDF_ITEM] : [];
     }
 }

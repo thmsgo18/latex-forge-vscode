@@ -4,6 +4,21 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-06-09
+
+### Changed
+
+- The activity bar panel is now **context-aware**:
+  - **Inside a LaTeX project** (folder with a `.tex` file at its root): only
+    the **Project** view is shown, with the Build / Clean / Open PDF actions.
+    The Templates list is hidden to keep the panel focused.
+  - **Outside a project** (no folder open, or folder with no `.tex` file): the
+    **Project** view shows a welcome message with **Create Project** and **Open
+    Folder** buttons; the **Templates** view appears below it (collapsed) so
+    installed templates are always one click away.
+- The panel switches automatically when a `.tex` file is created or deleted, or
+  when the workspace folder changes — no restart required.
+
 ## [0.0.9] - 2026-06-09
 
 ### Added
