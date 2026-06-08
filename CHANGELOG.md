@@ -4,6 +4,16 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-06-08
+
+### Changed
+
+- **Create Project** now opens the new project folder automatically as soon as
+  the CLI finishes, instead of showing an "Open Project" button the user had
+  to click. The project's `.vscode/settings.json` (which sets the correct LaTeX
+  engine and build recipe) is therefore always active from the very first build,
+  regardless of which folder was open before.
+
 ## [0.0.5] - 2026-06-08
 
 ### Changed
