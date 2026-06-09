@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
@@ -5,6 +6,18 @@ import { runLatexForge } from '../cliRunner';
 import { pickTemplate } from '../templates';
 
 const PROJECT_NAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
+
+/**
+ * Returns true if the given folder looks like an existing LaTeX project,
+ * i.e. it contains at least one .tex file directly at its root.
+ */
+function looksLikeLatexProject(folderPath: string): boolean {
+    try {
+        return fs.readdirSync(folderPath).some((entry) => entry.endsWith('.tex'));
+    } catch {
+        return false;
+    }
+}
 
 async function askProjectName(): Promise<string | undefined> {
     return vscode.window.showInputBox({
@@ -24,20 +37,50 @@ async function askProjectName(): Promise<string | undefined> {
     });
 }
 
+/**
+ * Asks the user to pick a destination folder, looping if they choose a folder
+ * that already looks like a LaTeX project (contains .tex files at its root).
+ */
 async function pickOutputDirectory(): Promise<string | undefined> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
+    let defaultUri = workspaceFolders?.[0]?.uri;
 
-    const picked = await vscode.window.showOpenDialog({
-        canSelectFiles: false,
-        canSelectFolders: true,
-        canSelectMany: false,
-        openLabel: 'Select destination folder',
-        // Pre-open the current workspace folder so the user starts there,
-        // but still has to confirm the location explicitly.
-        defaultUri: workspaceFolders?.[0]?.uri
-    });
+    for (let attempt = 0; attempt < 20; attempt++) {
+        const picked = await vscode.window.showOpenDialog({
+            canSelectFiles: false,
+            canSelectFolders: true,
+            canSelectMany: false,
+            openLabel: 'Select destination folder',
+            defaultUri
+        });
 
-    return picked?.[0]?.fsPath;
+        if (!picked || picked.length === 0) {
+            return undefined; // user cancelled
+        }
+
+        const folderPath = picked[0].fsPath;
+
+        if (!looksLikeLatexProject(folderPath)) {
+            return folderPath; // clean folder — proceed
+        }
+
+        const choice = await vscode.window.showWarningMessage(
+            `"${path.basename(folderPath)}" already contains LaTeX files — creating a project here would nest projects inside each other.`,
+            'Choose another folder',
+            'Create here anyway'
+        );
+
+        if (choice === 'Create here anyway') {
+            return folderPath;
+        }
+        if (!choice) {
+            return undefined; // user dismissed the warning
+        }
+        // 'Choose another folder': loop, re-opening at the same location
+        defaultUri = picked[0];
+    }
+
+    return undefined;
 }
 
 export async function createProjectCommand(outputChannel: vscode.OutputChannel): Promise<void> {

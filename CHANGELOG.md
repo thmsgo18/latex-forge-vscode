@@ -13,6 +13,9 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   was used silently, which could cause projects to be created inside other LaTeX
   projects. The picker opens pre-navigated to the current workspace folder for
   convenience, but the user must always confirm the location explicitly.
+- If the selected destination already contains `.tex` files (i.e. looks like an
+  existing LaTeX project), a warning is shown before proceeding. The user can
+  pick a different folder or override and create there anyway.
 
 ## [0.1.5] - 2026-06-09
 
