@@ -43,13 +43,20 @@ async function askNewName(currentName: string): Promise<string | undefined> {
     });
 }
 
-export async function renameProjectCommand(outputChannel: vscode.OutputChannel): Promise<void> {
+/**
+ * @param folderPath  When provided, skips the folder picker (used from the
+ *                    panel when the workspace is already a LaTeX project).
+ */
+export async function renameProjectCommand(
+    outputChannel: vscode.OutputChannel,
+    folderPath?: string
+): Promise<void> {
     if (!(await isLatexForgeAvailable())) {
         await promptInstallLatexForge();
         return;
     }
 
-    const projectPath = await pickProjectFolder();
+    const projectPath = folderPath ?? await pickProjectFolder();
     if (!projectPath) {
         return;
     }

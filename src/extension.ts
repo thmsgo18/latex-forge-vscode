@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const statusBar = new StatusBarManager(context);
     setUpdateAvailableCallback((v) => statusBar.notifyUpdateAvailable(v));
 
-    const projectProvider = new ProjectTreeProvider();
+    const projectProvider = new ProjectTreeProvider(context);
     const templatesProvider = new TemplatesTreeProvider(outputChannel);
     const refreshTemplates = () => templatesProvider.refresh();
 
@@ -44,6 +44,10 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('latex-forge.renameProject', () =>
             renameProjectCommand(outputChannel)
         ),
+        vscode.commands.registerCommand('latex-forge.renameCurrentProject', () => {
+            const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            return renameProjectCommand(outputChannel, root);
+        }),
         vscode.commands.registerCommand('latex-forge.setupEnvironment', () =>
             setupEnvironmentCommand(outputChannel)
         ),

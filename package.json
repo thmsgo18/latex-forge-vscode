@@ -37,6 +37,10 @@
         "title": "LaTeX Forge: Rename Project"
       },
       {
+        "command": "latex-forge.renameCurrentProject",
+        "title": "LaTeX Forge: Rename Current Project"
+      },
+      {
         "command": "latex-forge.setupEnvironment",
         "title": "LaTeX Forge: Setup Environment"
       },
