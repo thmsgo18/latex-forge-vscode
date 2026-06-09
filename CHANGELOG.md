@@ -4,6 +4,16 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-06-09
+
+### Fixed
+
+- The extension failed to activate ("Aucun fournisseur de données inscrit")
+  when LaTeX Workshop was not already installed. The hard `extensionDependencies`
+  entry has been removed: LaTeX Forge now always activates, and the Build / Clean
+  / Open PDF commands continue to recommend and link to LaTeX Workshop when it is
+  absent, but do not block the rest of the extension.
+
 ## [0.1.3] - 2026-06-09
 
 ### Added

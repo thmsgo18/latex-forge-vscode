@@ -2,7 +2,7 @@
   "name": "latex-forge-vscode",
   "displayName": "LaTeX Forge",
   "description": "Create and manage LaTeX Forge projects without leaving the editor",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "thmsgo18",
   "license": "MIT",
   "repository": {
@@ -20,9 +20,6 @@
     "latex-forge",
     "pdf",
     "templates"
-  ],
-  "extensionDependencies": [
-    "James-Yu.latex-workshop"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
