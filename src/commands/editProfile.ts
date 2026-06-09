@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as TOML from '@iarna/toml';
 import * as vscode from 'vscode';
 
-// ── Schema (mirrors latex_forge/profile.py) ─────────────────────────────────
+// Schema (mirrors latex_forge/profile.py)
 
 interface ProfileField {
     key: string;
@@ -37,7 +37,7 @@ const SECTION_HEADERS: Record<string, string> = {
     professional: 'Professional',
 };
 
-// ── File helpers ────────────────────────────────────────────────────────────
+// File helpers
 
 const PROFILE_PATH = path.join(os.homedir(), '.latex-forge', 'profile.toml');
 
@@ -75,7 +75,7 @@ function saveProfile(values: Record<string, string>): void {
                 lines.push('');
             }
             const header = SECTION_HEADERS[section];
-            lines.push(`# ── ${header} ${'─'.repeat(55 - header.length)}`);
+            lines.push(`# ${header}`);
             currentSection = section;
         }
         const value = values[key] ?? '';
@@ -95,14 +95,14 @@ function clearProfile(): void {
     }
 }
 
-// ── Nonce helper ────────────────────────────────────────────────────────────
+// Nonce helper
 
 function getNonce(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-// ── Webview HTML ─────────────────────────────────────────────────────────────
+// Webview HTML
 
 function buildFormRows(fields: ProfileField[]): string {
     return fields.map(({ key, label, type }) => `
@@ -315,7 +315,7 @@ function renderHtml(nonce: string): string {
 </html>`;
 }
 
-// ── Command ─────────────────────────────────────────────────────────────────
+// Command
 
 let panel: vscode.WebviewPanel | undefined;
 
@@ -328,7 +328,7 @@ export function editProfileCommand(): void {
 
     panel = vscode.window.createWebviewPanel(
         'latexForgeProfile',
-        'LaTeX Forge — Edit Profile',
+        'LaTeX Forge: Edit Profile',
         vscode.ViewColumn.One,
         { enableScripts: true, retainContextWhenHidden: true }
     );

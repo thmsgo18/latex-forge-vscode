@@ -19,57 +19,89 @@ interface DiagnoseResult {
     default_template: DiagItem;
 }
 
+interface Row {
+    ok: boolean;
+    optional: boolean;
+    label: string;
+    detail: string;
+    fix: string;
+}
+
 let panel: vscode.WebviewPanel | undefined;
+
+function buildRow(
+    label: string,
+    item: DiagItem,
+    detailFn: (d: DiagItem) => string,
+    fixText: string,
+    optional = false
+): Row {
+    return { ok: item.ok, optional, label, detail: detailFn(item), fix: fixText };
+}
 
 function renderDashboard(
     webview: vscode.Webview,
-    data: DiagnoseResult
+    data: DiagnoseResult,
+    latexWorkshopInstalled: boolean
 ): string {
     const nonce = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
     const cspSource = webview.cspSource;
 
-    const rows = [
-        buildRow('LaTeX Forge CLI', data.latex_forge, (d) =>
-            d.ok ? `v${d.version}` : 'Not found',
-            'Not installed — run: pipx install latex-forge'
+    const rows: Row[] = [
+        buildRow('LaTeX Forge CLI', data.latex_forge,
+            (d) => d.ok ? `v${d.version}` : 'Not found',
+            'Run: pipx install latex-forge'
         ),
-        buildRow('pipx', data.pipx, (d) =>
-            d.ok ? `v${d.version}` : 'Not found',
-            'Not installed — see <a href="https://pipx.pypa.io">pipx.pypa.io</a>'
+        buildRow('pipx', data.pipx,
+            (d) => d.ok ? `v${d.version}` : 'Not found',
+            'See <a href="https://pipx.pypa.io">pipx.pypa.io</a>'
         ),
         buildRow('TeX Live', data.texlive, (d) => {
             if (!d.ok) { return 'Not found'; }
             const engines = d.engines?.length ? ` (${d.engines.join(', ')})` : '';
             return d.version ? `v${d.version}${engines}` : `installed${engines}`;
         }, data.texlive.fix ?? 'Install TeX Live: <a href="https://tug.org/texlive/">tug.org/texlive</a>'),
-        buildRow('latexmk', data.latexmk, (d) =>
-            d.ok ? `v${d.version}` : 'Not found',
-            data.latexmk.fix ?? 'Install via TeX Live or package manager'
+        buildRow('latexmk', data.latexmk,
+            (d) => d.ok ? `v${d.version}` : 'Not found',
+            data.latexmk.fix ?? 'Install via TeX Live or your package manager'
         ),
-        buildRow('Profile', data.profile, (d) =>
-            d.ok ? (d.path ?? 'configured') : 'Not configured',
-            'Run: latex-forge profile set'
+        buildRow('LaTeX Workshop', { ok: latexWorkshopInstalled },
+            (d) => d.ok ? 'Installed' : 'Not installed',
+            'Install from VS Code Marketplace: James-Yu.latex-workshop',
+            true /* optional */
         ),
-        buildRow('Default template', data.default_template, (d) =>
-            d.ok ? (d.value ?? 'set') : 'Not set',
-            'Run: latex-forge config set default_template &lt;name&gt;'
+        buildRow('Profile', data.profile,
+            (d) => d.ok ? (d.path ?? 'configured') : 'Not configured',
+            'Open "LaTeX Forge: Edit Profile" to fill in your details',
+            true /* optional */
+        ),
+        buildRow('Default template', data.default_template,
+            (d) => d.ok ? (d.value ?? 'set') : 'Not set',
+            'Run: latex-forge config set default_template &lt;name&gt;',
+            true /* optional */
         )
     ];
 
-    const allOk = rows.every((r) => r.ok);
-    const summaryClass = allOk ? 'summary-ok' : 'summary-warn';
-    const summaryText = allOk
-        ? '✓ All components are installed and configured.'
-        : '⚠ Some components need attention — see details below.';
+    const requiredRows = rows.filter((r) => !r.optional);
+    const allRequiredOk = requiredRows.every((r) => r.ok);
+    const summaryClass = allRequiredOk ? 'summary-ok' : 'summary-warn';
+    const summaryText = allRequiredOk
+        ? 'All required components are installed and ready.'
+        : 'Some required components need attention: see the table below.';
+
+    function rowBadge(r: Row): string {
+        if (r.ok) { return '<span class="badge ok">OK</span>'; }
+        if (r.optional) { return '<span class="badge info">Not set</span>'; }
+        return '<span class="badge fail">Issue</span>';
+    }
 
     const tableRows = rows.map((r) => `
-        <tr class="${r.ok ? 'row-ok' : 'row-fail'}">
+        <tr class="${r.ok ? 'row-ok' : (r.optional ? 'row-info' : 'row-fail')}">
             <td class="col-name">${r.label}</td>
-            <td class="col-status">${r.ok ? '<span class="badge ok">OK</span>' : '<span class="badge fail">Issue</span>'}</td>
+            <td class="col-status">${rowBadge(r)}</td>
             <td class="col-detail">${r.detail}</td>
             <td class="col-fix">${r.ok ? '' : r.fix}</td>
-        </tr>
-    `).join('');
+        </tr>`).join('');
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -78,12 +110,13 @@ function renderDashboard(
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'none'; style-src ${cspSource} 'nonce-${nonce}'; script-src 'nonce-${nonce}'; img-src ${cspSource} https:;"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>LaTeX Forge — Diagnose</title>
+    <title>LaTeX Forge: Diagnose</title>
     <style nonce="${nonce}">
         :root {
             --ok:   #4caf50;
             --fail: #e53935;
             --warn: #fb8c00;
+            --muted: var(--vscode-descriptionForeground);
             --bg:   var(--vscode-editor-background);
             --fg:   var(--vscode-editor-foreground);
             --border: var(--vscode-widget-border, #444);
@@ -99,13 +132,16 @@ function renderDashboard(
         td { padding: 8px 12px; vertical-align: top; }
         tr + tr td { border-top: 1px solid var(--border); }
         .col-name   { font-weight: 500; white-space: nowrap; }
-        .col-status { width: 60px; }
+        .col-status { width: 70px; }
         .col-detail { color: var(--vscode-descriptionForeground); font-family: var(--vscode-editor-font-family, monospace); font-size: 12px; }
         .col-fix    { font-size: 12px; color: var(--warn); }
         .col-fix a  { color: var(--vscode-textLink-foreground); }
+        .row-info .col-name,
+        .row-info .col-detail { color: var(--muted); }
         .badge { display: inline-block; border-radius: 3px; padding: 1px 7px; font-size: 11px; font-weight: 600; }
-        .badge.ok   { background: rgba(76,175,80,.2); color: var(--ok); }
+        .badge.ok   { background: rgba(76,175,80,.2);  color: var(--ok); }
         .badge.fail { background: rgba(229,57,53,.15); color: var(--fail); }
+        .badge.info { background: rgba(128,128,128,.15); color: var(--muted); }
         .actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
         button { background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 3px; padding: 6px 14px; cursor: pointer; font-size: 12px; }
         button:hover { background: var(--vscode-button-hoverBackground); }
@@ -114,7 +150,7 @@ function renderDashboard(
     </style>
 </head>
 <body>
-    <h1>$(beaker) LaTeX Forge — Environment Diagnostics</h1>
+    <h1>Environment Diagnostics</h1>
     <div class="summary ${summaryClass}">${summaryText}</div>
     <table>
         <thead>
@@ -130,7 +166,7 @@ function renderDashboard(
         </tbody>
     </table>
     <div class="actions">
-        <button id="refresh-btn">↻ Refresh</button>
+        <button id="refresh-btn">Refresh</button>
         <button class="secondary" id="setup-btn">Run setup wizard</button>
     </div>
     <script nonce="${nonce}">
@@ -146,31 +182,9 @@ function renderDashboard(
 </html>`;
 }
 
-interface Row {
-    ok: boolean;
-    label: string;
-    detail: string;
-    fix: string;
-}
-
-function buildRow(
-    label: string,
-    item: DiagItem,
-    detailFn: (d: DiagItem) => string,
-    fixText: string
-): Row {
-    return {
-        ok: item.ok,
-        label,
-        detail: detailFn(item),
-        fix: fixText
-    };
-}
-
 export async function diagnoseCommand(
     outputChannel: vscode.OutputChannel
 ): Promise<void> {
-    // Re-use existing panel if open
     if (panel) {
         panel.reveal();
         await reloadPanel(outputChannel);
@@ -179,7 +193,7 @@ export async function diagnoseCommand(
 
     panel = vscode.window.createWebviewPanel(
         'latexForgeDiagnose',
-        'LaTeX Forge — Diagnose',
+        'LaTeX Forge: Diagnose',
         vscode.ViewColumn.One,
         { enableScripts: true, retainContextWhenHidden: true }
     );
@@ -199,16 +213,16 @@ export async function diagnoseCommand(
     await reloadPanel(outputChannel);
 }
 
-async function reloadPanel(
-    outputChannel: vscode.OutputChannel
-): Promise<void> {
+async function reloadPanel(outputChannel: vscode.OutputChannel): Promise<void> {
     if (!panel) { return; }
 
     panel.webview.html = buildLoadingHtml(panel.webview);
 
+    const latexWorkshopInstalled =
+        vscode.extensions.getExtension('James-Yu.latex-workshop') !== undefined;
+
     const result = await execLatexForge(['diagnose', '--json']);
 
-    // diagnose exits 1 when some tools are missing, but JSON is still on stdout
     if (!result.stdout.trim()) {
         outputChannel.appendLine('LaTeX Forge diagnose: no output received.');
         panel.webview.html = buildErrorHtml(panel.webview, 'No output from diagnose command.');
@@ -225,7 +239,7 @@ async function reloadPanel(
         return;
     }
 
-    panel.webview.html = renderDashboard(panel.webview, data);
+    panel.webview.html = renderDashboard(panel.webview, data, latexWorkshopInstalled);
 }
 
 function buildLoadingHtml(webview: vscode.Webview): string {
@@ -234,7 +248,7 @@ function buildLoadingHtml(webview: vscode.Webview): string {
 <html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'nonce-${nonce}';"/>
 <style nonce="${nonce}">body{font-family:var(--vscode-font-family);color:var(--vscode-editor-foreground);background:var(--vscode-editor-background);padding:24px;}</style>
-</head><body>Loading diagnostics…</body></html>`;
+</head><body>Loading diagnostics...</body></html>`;
 }
 
 function buildErrorHtml(webview: vscode.Webview, message: string): string {
