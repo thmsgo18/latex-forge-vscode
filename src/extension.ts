@@ -11,8 +11,9 @@ import { openPdfCommand } from './commands/openPdf';
 import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
-import { checkForCliUpdate } from './cliUpdater';
+import { checkForCliUpdate, setUpdateAvailableCallback } from './cliUpdater';
 import { ProjectTreeProvider } from './projectTreeProvider';
+import { StatusBarManager } from './statusBar';
 import { TemplateInfo } from './templates';
 import { TemplatesTreeProvider } from './templatesTreeProvider';
 
@@ -20,9 +21,19 @@ export function activate(context: vscode.ExtensionContext): void {
     const outputChannel = vscode.window.createOutputChannel('LaTeX Forge');
     context.subscriptions.push(outputChannel);
 
+    // Status bar — must be created before checkForCliUpdate runs so the
+    // update callback is registered in time.
+    const statusBar = new StatusBarManager(context);
+    setUpdateAvailableCallback((v) => statusBar.notifyUpdateAvailable(v));
+
     const projectProvider = new ProjectTreeProvider();
     const templatesProvider = new TemplatesTreeProvider(outputChannel);
     const refreshTemplates = () => templatesProvider.refresh();
+
+    // Callback used by "Install & Create" in the gallery: runs createProject
+    // with the just-installed template pre-selected, skipping the picker.
+    const onInstallAndCreate = (templateName: string) =>
+        createProjectCommand(outputChannel, templateName);
 
     context.subscriptions.push(
         vscode.window.registerTreeDataProvider('latexForgeProject', projectProvider),
@@ -48,7 +59,7 @@ export function activate(context: vscode.ExtensionContext): void {
             installTemplateCommand(outputChannel, refreshTemplates)
         ),
         vscode.commands.registerCommand('latex-forge.browseGallery', () =>
-            browseGalleryCommand(outputChannel, refreshTemplates)
+            browseGalleryCommand(outputChannel, refreshTemplates, onInstallAndCreate)
         ),
         vscode.commands.registerCommand('latex-forge.removeTemplate', (item?: TemplateInfo) =>
             removeTemplateCommand(outputChannel, refreshTemplates, item?.name)

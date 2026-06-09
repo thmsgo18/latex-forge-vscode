@@ -11,6 +11,14 @@ const FETCH_TIMEOUT_MS = 8000;
 // not fire again if the user reloads the window.
 let sessionCheckDone = false;
 
+// Optional callback fired when a newer CLI version is detected.
+let _onUpdateAvailable: ((latestVersion: string) => void) | undefined;
+
+/** Register a callback that is called once when a CLI update is found. */
+export function setUpdateAvailableCallback(cb: (latestVersion: string) => void): void {
+    _onUpdateAvailable = cb;
+}
+
 // ---------------------------------------------------------------------------
 // Version helpers
 // ---------------------------------------------------------------------------
@@ -135,6 +143,7 @@ export async function checkForCliUpdate(
     }
 
     if (!isNewer(installed, latest)) {
+        _onUpdateAvailable = undefined; // already up to date — clear any stale ref
         if (force) {
             await vscode.window.showInformationMessage(
                 `LaTeX Forge CLI is up to date (version ${installed}).`
@@ -142,6 +151,9 @@ export async function checkForCliUpdate(
         }
         return;
     }
+
+    // Notify the status bar (or any other subscriber) before showing the dialog.
+    _onUpdateAvailable?.(latest);
 
     const choice = await vscode.window.showInformationMessage(
         `LaTeX Forge CLI ${latest} is available (installed: ${installed}).`,

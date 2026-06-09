@@ -83,13 +83,19 @@ async function pickOutputDirectory(): Promise<string | undefined> {
     return undefined;
 }
 
-export async function createProjectCommand(outputChannel: vscode.OutputChannel): Promise<void> {
+export async function createProjectCommand(
+    outputChannel: vscode.OutputChannel,
+    preselectedTemplate?: string
+): Promise<void> {
     if (!(await isLatexForgeAvailable())) {
         await promptInstallLatexForge();
         return;
     }
 
-    const template = await pickTemplate(outputChannel, { title: 'LaTeX Forge: Create Project' });
+    // When called from "Install & Create" in the gallery the template is
+    // already known — skip the picker to avoid a redundant step.
+    const template = preselectedTemplate
+        ?? await pickTemplate(outputChannel, { title: 'LaTeX Forge: Create Project' });
     if (!template) {
         return;
     }

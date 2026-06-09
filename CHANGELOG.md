@@ -4,6 +4,28 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-06-09
+
+### Added
+
+- **Gallery — search bar**: a text input in the gallery toolbar lets you filter
+  templates by name or description in real time, on top of the existing category
+  filter.
+- **Gallery — "Installed" badges**: templates that are already installed locally
+  are marked with a green **✓ Installed** badge in their card header. The badge
+  also appears dynamically after a successful install within the current session.
+- **Gallery — "Install & Create" button**: each gallery card now has a second
+  action button. For a template that is not yet installed it reads **Install &
+  Create** — it installs the template then immediately opens the *Create
+  Project* flow with that template pre-selected, skipping the template picker.
+  Once installed the button reads **Create project** and skips the install step
+  entirely.
+- **Status bar item**: a `$(file-code) LaTeX Forge` item is now always visible
+  in the status bar. When a workspace folder containing `.tex` files is open it
+  shows the project folder name instead. When a CLI update is detected it adds a
+  `$(arrow-up)` indicator with a tooltip showing the available version. Clicking
+  it opens the LaTeX Forge activity bar panel.
+
 ## [0.1.6] - 2026-06-09
 
 ### Changed
