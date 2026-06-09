@@ -4,6 +4,21 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-06-09
+
+### Changed
+
+- The activity bar panel is now always the same regardless of whether a LaTeX
+  project is open or not:
+  - The top **LaTeX Forge** view always shows **Create Project** and **Browse
+    Template Gallery** — one click from anywhere.
+  - The **Templates** view (collapsed by default) always lists installed
+    templates below.
+  - No more context detection, file watchers, or conditional visibility.
+- Removed **Build**, **Clean**, and **Open PDF** from the panel toolbar: those
+  actions are still available from the Command Palette (⌘⇧P) and are handled
+  by LaTeX Workshop.
+
 ## [0.1.1] - 2026-06-09
 
 ### Changed

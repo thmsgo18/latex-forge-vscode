@@ -2,7 +2,7 @@
   "name": "latex-forge-vscode",
   "displayName": "LaTeX Forge",
   "description": "Create and manage LaTeX Forge projects without leaving the editor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "thmsgo18",
   "license": "MIT",
   "repository": {
@@ -74,18 +74,15 @@
       },
       {
         "command": "latex-forge.buildProject",
-        "title": "LaTeX Forge: Build",
-        "icon": "$(debug-start)"
+        "title": "LaTeX Forge: Build"
       },
       {
         "command": "latex-forge.cleanProject",
-        "title": "LaTeX Forge: Clean",
-        "icon": "$(trash)"
+        "title": "LaTeX Forge: Clean"
       },
       {
         "command": "latex-forge.openPdf",
-        "title": "LaTeX Forge: Open PDF",
-        "icon": "$(eye)"
+        "title": "LaTeX Forge: Open PDF"
       }
     ],
     "viewsContainers": {
@@ -101,40 +98,17 @@
       "latexForge": [
         {
           "id": "latexForgeProject",
-          "name": "Project"
+          "name": "LaTeX Forge"
         },
         {
           "id": "latexForgeTemplates",
           "name": "Templates",
-          "when": "!latex-forge.hasProject",
           "visibility": "collapsed"
         }
       ]
     },
-    "viewsWelcome": [
-      {
-        "view": "latexForgeProject",
-        "contents": "No LaTeX project open.\n\nCreate a new project or open an existing one to access the Build, Clean, and Open PDF tools.\n\n[Create Project](command:latex-forge.createProject)\n[Open Folder](command:vscode.openFolder)",
-        "when": "!latex-forge.hasProject"
-      }
-    ],
     "menus": {
       "view/title": [
-        {
-          "command": "latex-forge.buildProject",
-          "when": "view == latexForgeProject && latex-forge.hasProject",
-          "group": "navigation@1"
-        },
-        {
-          "command": "latex-forge.cleanProject",
-          "when": "view == latexForgeProject && latex-forge.hasProject",
-          "group": "navigation@2"
-        },
-        {
-          "command": "latex-forge.openPdf",
-          "when": "view == latexForgeProject && latex-forge.hasProject",
-          "group": "navigation@3"
-        },
         {
           "command": "latex-forge.browseGallery",
           "when": "view == latexForgeTemplates",
