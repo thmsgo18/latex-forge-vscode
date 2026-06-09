@@ -1,14 +1,11 @@
 import * as vscode from 'vscode';
 import { browseGalleryCommand } from './commands/browseGallery';
-import { buildProjectCommand } from './commands/buildProject';
 import { diagnoseCommand } from './commands/diagnose';
 import { editProfileCommand } from './commands/editProfile';
-import { cleanProjectCommand } from './commands/cleanProject';
 import { configureDefaultsCommand } from './commands/configureDefaults';
 import { createProjectCommand } from './commands/createProject';
 import { installTemplateCommand } from './commands/installTemplate';
 import { listTemplatesCommand } from './commands/listTemplates';
-import { openPdfCommand } from './commands/openPdf';
 import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
@@ -78,13 +75,6 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('latex-forge.checkForUpdate', () =>
             checkForCliUpdate(outputChannel, /* force */ true)
         ),
-        // Build / Clean / Open PDF still available from the Command Palette
-        // (⌘⇧P), delegating to LaTeX Workshop with a latexmk fallback.
-        vscode.commands.registerCommand('latex-forge.buildProject', () =>
-            buildProjectCommand(outputChannel)
-        ),
-        vscode.commands.registerCommand('latex-forge.cleanProject', () => cleanProjectCommand()),
-        vscode.commands.registerCommand('latex-forge.openPdf', () => openPdfCommand())
     );
 
     // Check for a CLI update silently in the background once per session.

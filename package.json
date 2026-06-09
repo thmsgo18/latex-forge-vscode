@@ -78,18 +78,6 @@
         "title": "LaTeX Forge: Check for CLI Update"
       },
       {
-        "command": "latex-forge.buildProject",
-        "title": "LaTeX Forge: Build"
-      },
-      {
-        "command": "latex-forge.cleanProject",
-        "title": "LaTeX Forge: Clean"
-      },
-      {
-        "command": "latex-forge.openPdf",
-        "title": "LaTeX Forge: Open PDF"
-      },
-      {
         "command": "latex-forge.updateTemplates",
         "title": "LaTeX Forge: Update Templates",
         "icon": "$(arrow-up)"
