@@ -4,6 +4,13 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-06-09
+
+### Fixed
+
+- Template hover preview images no longer overflow the tooltip horizontally.
+  The image now scales to fit the tooltip width exactly (`max-width: 100%`).
+
 ## [0.1.9] - 2026-06-09
 
 ### Added
