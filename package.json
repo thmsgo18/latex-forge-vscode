@@ -12,6 +12,9 @@
   "engines": {
     "vscode": "^1.85.0"
   },
+  "extensionPack": [
+    "James-Yu.latex-workshop"
+  ],
   "categories": [
     "Other"
   ],
