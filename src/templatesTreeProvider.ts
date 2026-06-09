@@ -34,11 +34,14 @@ export class TemplatesTreeProvider implements vscode.TreeDataProvider<TemplateIn
         const previewUrl = this.previewUrls.get(element.name);
         if (previewUrl) {
             const md = new vscode.MarkdownString();
+            md.supportHtml = true;
             md.appendMarkdown(`**${element.name}**\n\n`);
             if (element.description) {
                 md.appendMarkdown(`${element.description}\n\n`);
             }
-            md.appendMarkdown(`![preview](${previewUrl})`);
+            md.appendMarkdown(
+                `<img src="${previewUrl}" style="max-width:100%;display:block;" />`
+            );
             item.tooltip = md;
         } else {
             item.tooltip = element.description ?? element.name;
