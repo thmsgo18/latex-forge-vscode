@@ -2,7 +2,7 @@
   "name": "latex-forge-vscode",
   "displayName": "LaTeX Forge",
   "description": "Create and manage LaTeX Forge projects without leaving the editor",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "thmsgo18",
   "license": "MIT",
   "repository": {
@@ -137,11 +137,12 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "compile": "node esbuild.mjs",
+    "compile-tests": "tsc -p ./",
+    "watch": "node esbuild.mjs --watch",
     "lint": "eslint src",
-    "pretest": "npm run compile && npm run lint",
+    "pretest": "npm run compile && npm run compile-tests && npm run lint",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
@@ -151,6 +152,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vscode/test-electron": "^2.3.9",
+    "esbuild": "^0.28.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.10",
     "mocha": "^10.2.0",

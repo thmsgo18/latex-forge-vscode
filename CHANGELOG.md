@@ -4,6 +4,16 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-06-09
+
+### Fixed
+
+- The extension failed to activate on any installed (non-development) instance
+  because the `@iarna/toml` runtime dependency was never bundled into the
+  packaged VSIX. All runtime dependencies are now bundled into a single
+  `out/extension.js` using **esbuild**, so the extension activates correctly
+  when installed from the Marketplace or a VSIX file.
+
 ## [0.1.4] - 2026-06-09
 
 ### Fixed

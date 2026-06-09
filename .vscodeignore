@@ -1,11 +1,14 @@
 .vscode/**
 .vscode-test/**
 .claude/**
-out/test/**
+out/**
+!out/extension.js
 src/**
+node_modules/**
 .gitignore
 .eslintrc.json
 tsconfig.json
+esbuild.mjs
 **/*.map
 **/*.ts
 .github/**
