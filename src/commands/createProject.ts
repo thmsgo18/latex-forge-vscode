@@ -26,25 +26,15 @@ async function askProjectName(): Promise<string | undefined> {
 
 async function pickOutputDirectory(): Promise<string | undefined> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (workspaceFolders && workspaceFolders.length === 1) {
-        return workspaceFolders[0].uri.fsPath;
-    }
-
-    if (workspaceFolders && workspaceFolders.length > 1) {
-        const picked = await vscode.window.showWorkspaceFolderPick({
-            placeHolder: 'Select the workspace folder where the project should be created'
-        });
-        if (picked) {
-            return picked.uri.fsPath;
-        }
-        return undefined;
-    }
 
     const picked = await vscode.window.showOpenDialog({
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
-        openLabel: 'Select destination folder'
+        openLabel: 'Select destination folder',
+        // Pre-open the current workspace folder so the user starts there,
+        // but still has to confirm the location explicitly.
+        defaultUri: workspaceFolders?.[0]?.uri
     });
 
     return picked?.[0]?.fsPath;

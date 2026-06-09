@@ -4,6 +4,16 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-06-09
+
+### Changed
+
+- **Create Project** now always opens a folder picker to choose the destination,
+  even when a workspace folder is already open. Previously the workspace folder
+  was used silently, which could cause projects to be created inside other LaTeX
+  projects. The picker opens pre-navigated to the current workspace folder for
+  convenience, but the user must always confirm the location explicitly.
+
 ## [0.1.5] - 2026-06-09
 
 ### Fixed
