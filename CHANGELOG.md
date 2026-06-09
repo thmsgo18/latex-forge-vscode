@@ -4,6 +4,36 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-06-09
+
+### Added
+
+- **Template hover previews**: hovering over any template in the Templates
+  view now shows a tooltip with the template name, description, and its
+  preview PNG loaded from the gallery. Works for both built-in and
+  user-installed templates. The gallery is fetched once in the background;
+  tooltips fall back to plain text when offline.
+- **Rename Project in panel**: a "Rename Project" item (orange edit icon)
+  now appears in the LaTeX Forge panel automatically when the current
+  workspace contains `.tex` files. It is hidden otherwise. Clicking it
+  jumps directly to the new-name prompt without asking for a folder. The
+  panel updates live when projects are opened or closed.
+- **LaTeX Workshop extension pack**: LaTeX Workshop
+  (`James-Yu.latex-workshop`) is now bundled as an extension pack. VS Code
+  installs it automatically alongside LaTeX Forge from the Marketplace.
+
+### Changed
+
+- **Removed Build / Clean / Open PDF commands**: these were duplicates of
+  LaTeX Workshop's built-in actions. The commands and their source files
+  have been removed to keep the extension focused.
+- **Diagnose panel**: the LaTeX Workshop VS Code extension is now listed as
+  an optional row (gray "Not set" badge when absent). Profile and default
+  template rows also use the gray badge when unconfigured, so only genuinely
+  broken components show a red "Issue" badge. The latexmk version is now
+  extracted cleanly from the full CLI version string (was showing the entire
+  "Latexmk, John Collins..." line).
+
 ## [0.1.8] - 2026-06-09
 
 ### Added
