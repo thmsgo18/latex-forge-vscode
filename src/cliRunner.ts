@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { execFile, spawn } from 'child_process';
 import * as vscode from 'vscode';
 import { LATEX_FORGE_BINARY } from './cliDetection';
 import { getCliEnv } from './cliEnv';
@@ -42,6 +42,24 @@ export function runLatexForge(
 
         child.on('close', (exitCode) => {
             resolve({ exitCode: exitCode ?? -1, stdout, stderr });
+        });
+    });
+}
+
+/**
+ * Runs `latex-forge <args>` silently (no output channel streaming).
+ * Intended for JSON queries where the raw output is parsed by the caller.
+ * Non-zero exit codes are resolved normally (not rejected) because many CLI
+ * subcommands use exit codes as semantic signals (e.g. diagnose exits 1 when
+ * tools are missing, template update exits 2 when nothing to update).
+ */
+export function execLatexForge(args: string[]): Promise<RunResult> {
+    return new Promise((resolve) => {
+        execFile(LATEX_FORGE_BINARY, args, { env: getCliEnv() }, (error, stdout, stderr) => {
+            const exitCode = error
+                ? (typeof error.code === 'number' ? error.code : -1)
+                : 0;
+            resolve({ exitCode, stdout, stderr });
         });
     });
 }

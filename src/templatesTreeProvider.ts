@@ -13,7 +13,13 @@ export class TemplatesTreeProvider implements vscode.TreeDataProvider<TemplateIn
 
     getTreeItem(element: TemplateInfo): vscode.TreeItem {
         const item = new vscode.TreeItem(element.name);
-        item.description = element.builtin ? element.description : 'user-installed';
+        if (element.builtin) {
+            item.description = element.description;
+        } else {
+            item.description = element.installedVersion
+                ? `v${element.installedVersion}`
+                : 'user-installed';
+        }
         item.tooltip = element.description ?? element.name;
         item.contextValue = element.builtin ? 'latexForgeBuiltinTemplate' : 'latexForgeUserTemplate';
         item.iconPath = new vscode.ThemeIcon('file-code');

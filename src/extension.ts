@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { browseGalleryCommand } from './commands/browseGallery';
 import { buildProjectCommand } from './commands/buildProject';
+import { diagnoseCommand } from './commands/diagnose';
 import { editProfileCommand } from './commands/editProfile';
 import { cleanProjectCommand } from './commands/cleanProject';
 import { configureDefaultsCommand } from './commands/configureDefaults';
@@ -11,6 +12,7 @@ import { openPdfCommand } from './commands/openPdf';
 import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
+import { updateTemplatesCommand } from './commands/updateTemplates';
 import { checkForCliUpdate, setUpdateAvailableCallback } from './cliUpdater';
 import { ProjectTreeProvider } from './projectTreeProvider';
 import { StatusBarManager } from './statusBar';
@@ -66,6 +68,12 @@ export function activate(context: vscode.ExtensionContext): void {
         ),
         vscode.commands.registerCommand('latex-forge.editProfile', () =>
             editProfileCommand()
+        ),
+        vscode.commands.registerCommand('latex-forge.updateTemplates', () =>
+            updateTemplatesCommand(outputChannel, refreshTemplates)
+        ),
+        vscode.commands.registerCommand('latex-forge.diagnose', () =>
+            diagnoseCommand(outputChannel)
         ),
         vscode.commands.registerCommand('latex-forge.checkForUpdate', () =>
             checkForCliUpdate(outputChannel, /* force */ true)

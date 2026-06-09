@@ -4,6 +4,27 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-06-09
+
+### Added
+
+- **Template list — JSON backend**: the Templates view and the template picker
+  now use `latex-forge template list --json` instead of parsing human-readable
+  text. User-installed templates display their installed version tag
+  (e.g. `v1.2.0`) in the tree.
+- **LaTeX Forge: Update Templates** (`latex-forge.updateTemplates`): runs
+  `latex-forge template update` for all user-installed templates and shows a
+  formatted summary in the output channel (one line per template: upgraded,
+  already up-to-date, skipped, or error) plus a summary notification. A
+  `$(arrow-up)` toolbar button appears at the top of the Templates view.
+- **LaTeX Forge: Diagnose Environment** (`latex-forge.diagnose`): opens a
+  webview dashboard that calls `latex-forge diagnose --json` and displays the
+  status of every required component — CLI version, pipx, TeX Live (with engine
+  list), latexmk, profile, and default template — with OK / Issue badges and
+  inline fix hints. A `$(beaker)` toolbar button appears in the LaTeX Forge
+  project view. The panel can be refreshed in place or used to launch the Setup
+  Wizard directly.
+
 ## [0.1.7] - 2026-06-09
 
 ### Added

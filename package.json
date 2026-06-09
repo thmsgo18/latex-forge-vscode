@@ -2,7 +2,7 @@
   "name": "latex-forge-vscode",
   "displayName": "LaTeX Forge",
   "description": "Create and manage LaTeX Forge projects without leaving the editor",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publisher": "thmsgo18",
   "license": "MIT",
   "repository": {
@@ -85,6 +85,16 @@
       {
         "command": "latex-forge.openPdf",
         "title": "LaTeX Forge: Open PDF"
+      },
+      {
+        "command": "latex-forge.updateTemplates",
+        "title": "LaTeX Forge: Update Templates",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "latex-forge.diagnose",
+        "title": "LaTeX Forge: Diagnose Environment",
+        "icon": "$(beaker)"
       }
     ],
     "viewsContainers": {
@@ -112,19 +122,29 @@
     "menus": {
       "view/title": [
         {
+          "command": "latex-forge.diagnose",
+          "when": "view == latexForgeProject",
+          "group": "navigation@1"
+        },
+        {
           "command": "latex-forge.browseGallery",
           "when": "view == latexForgeTemplates",
           "group": "navigation@1"
         },
         {
-          "command": "latex-forge.installTemplate",
+          "command": "latex-forge.updateTemplates",
           "when": "view == latexForgeTemplates",
           "group": "navigation@2"
         },
         {
-          "command": "latex-forge.refreshTemplates",
+          "command": "latex-forge.installTemplate",
           "when": "view == latexForgeTemplates",
           "group": "navigation@3"
+        },
+        {
+          "command": "latex-forge.refreshTemplates",
+          "when": "view == latexForgeTemplates",
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [
