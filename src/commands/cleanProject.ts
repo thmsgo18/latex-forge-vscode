@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { lwClean } from '../latexWorkshop';
 import { getOutDir, getWorkspaceRoot } from '../projectUtils';
 
 /**
@@ -32,6 +33,12 @@ function removeFile(filePath: string): boolean {
 }
 
 export async function cleanProjectCommand(): Promise<void> {
+    // Prefer LaTeX Workshop so it can clean according to its own recipe config.
+    if (await lwClean()) {
+        return;
+    }
+
+    // Fallback: remove artefacts manually when LaTeX Workshop is not available.
     const workspaceRoot = getWorkspaceRoot();
     if (!workspaceRoot) {
         await vscode.window.showErrorMessage(

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { lwOpenPdf } from '../latexWorkshop';
 import { getOutDir, getWorkspaceRoot } from '../projectUtils';
 
 /** Collects all PDF files from a directory, returns absolute paths. */
@@ -15,6 +16,12 @@ function listPdfs(dir: string): string[] {
 }
 
 export async function openPdfCommand(): Promise<void> {
+    // Prefer LaTeX Workshop: its PDF viewer supports SyncTeX and auto-refresh.
+    if (await lwOpenPdf()) {
+        return;
+    }
+
+    // Fallback: find and open the PDF directly when LaTeX Workshop is absent.
     const workspaceRoot = getWorkspaceRoot();
     if (!workspaceRoot) {
         await vscode.window.showErrorMessage(

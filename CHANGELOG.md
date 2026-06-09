@@ -4,6 +4,19 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-09
+
+### Changed
+
+- **Build**, **Clean**, and **Open PDF** now delegate to LaTeX Workshop when
+  it is available, so users get SyncTeX, live PDF refresh, inline error
+  display, and all of LaTeX Workshop's features through the LaTeX Forge
+  panel buttons.  A built-in fallback (latexmk / manual artifact removal /
+  direct PDF open) is used when LaTeX Workshop is absent, with a one-time
+  notification and a direct link to install it.
+- LaTeX Workshop (`James-Yu.latex-workshop`) is now an extension dependency:
+  VS Code installs it automatically alongside LaTeX Forge.
+
 ## [0.1.0] - 2026-06-09
 
 ### Changed

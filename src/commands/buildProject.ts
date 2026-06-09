@@ -3,9 +3,17 @@ import { spawn } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { getCliEnv } from '../cliEnv';
+import { lwBuild } from '../latexWorkshop';
 import { findMainTexFile, getBuildTool, getOutDir, getWorkspaceRoot } from '../projectUtils';
 
 export async function buildProjectCommand(outputChannel: vscode.OutputChannel): Promise<void> {
+    // Prefer LaTeX Workshop: it handles multi-step recipes, SyncTeX, inline
+    // error display, and PDF auto-refresh out of the box.
+    if (await lwBuild()) {
+        return;
+    }
+
+    // Fallback: run latexmk directly when LaTeX Workshop is not available.
     const workspaceRoot = getWorkspaceRoot();
     if (!workspaceRoot) {
         await vscode.window.showErrorMessage(
