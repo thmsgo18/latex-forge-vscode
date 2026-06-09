@@ -4,6 +4,18 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-06-09
+
+### Added
+
+- **Edit Profile** — a new panel accessible from the **LaTeX Forge** activity
+  bar view (or via `LaTeX Forge: Edit Profile` in the Command Palette). Opens a
+  webview form with four sections — **Identity**, **Online profiles**,
+  **Academic**, and **Professional** — matching the fields managed by
+  `latex-forge profile set` in the CLI. Values are saved to
+  `~/.latex-forge/profile.toml` and are automatically applied when you create a
+  new project (filled in by the CLI).
+
 ## [0.1.2] - 2026-06-09
 
 ### Changed

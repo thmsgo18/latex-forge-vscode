@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { browseGalleryCommand } from './commands/browseGallery';
 import { buildProjectCommand } from './commands/buildProject';
+import { editProfileCommand } from './commands/editProfile';
 import { cleanProjectCommand } from './commands/cleanProject';
 import { configureDefaultsCommand } from './commands/configureDefaults';
 import { createProjectCommand } from './commands/createProject';
@@ -51,6 +52,9 @@ export function activate(context: vscode.ExtensionContext): void {
         ),
         vscode.commands.registerCommand('latex-forge.removeTemplate', (item?: TemplateInfo) =>
             removeTemplateCommand(outputChannel, refreshTemplates, item?.name)
+        ),
+        vscode.commands.registerCommand('latex-forge.editProfile', () =>
+            editProfileCommand()
         ),
         vscode.commands.registerCommand('latex-forge.checkForUpdate', () =>
             checkForCliUpdate(outputChannel, /* force */ true)

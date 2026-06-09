@@ -30,6 +30,13 @@ const ITEMS: QuickActionItem[] = [
         'latex-forge.browseGallery',
         'Browse and install templates from the online gallery'
     ),
+    new QuickActionItem(
+        'Edit Profile',
+        'account',
+        new vscode.ThemeColor('charts.purple'),
+        'latex-forge.editProfile',
+        'Edit your personal profile — auto-filled when creating a new project'
+    ),
 ];
 
 export class ProjectTreeProvider implements vscode.TreeDataProvider<QuickActionItem> {
