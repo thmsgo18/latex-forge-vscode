@@ -29,6 +29,17 @@ interface Row {
 
 let panel: vscode.WebviewPanel | undefined;
 
+/**
+ * Extracts a clean version number from a raw version string.
+ * Handles cases like "Latexmk, John Collins, 9 March 2026. Version 4.88"
+ * by looking for a "Version X.YY" pattern, falling back to the raw string.
+ */
+function cleanVersion(raw: string | undefined): string {
+    if (!raw) { return 'installed'; }
+    const match = raw.match(/Version\s+(\S+)/i);
+    return `v${match ? match[1] : raw}`;
+}
+
 function buildRow(
     label: string,
     item: DiagItem,
@@ -49,20 +60,20 @@ function renderDashboard(
 
     const rows: Row[] = [
         buildRow('LaTeX Forge CLI', data.latex_forge,
-            (d) => d.ok ? `v${d.version}` : 'Not found',
+            (d) => d.ok ? cleanVersion(d.version) : 'Not found',
             'Run: pipx install latex-forge'
         ),
         buildRow('pipx', data.pipx,
-            (d) => d.ok ? `v${d.version}` : 'Not found',
+            (d) => d.ok ? cleanVersion(d.version) : 'Not found',
             'See <a href="https://pipx.pypa.io">pipx.pypa.io</a>'
         ),
         buildRow('TeX Live', data.texlive, (d) => {
             if (!d.ok) { return 'Not found'; }
             const engines = d.engines?.length ? ` (${d.engines.join(', ')})` : '';
-            return d.version ? `v${d.version}${engines}` : `installed${engines}`;
+            return `${cleanVersion(d.version)}${engines}`;
         }, data.texlive.fix ?? 'Install TeX Live: <a href="https://tug.org/texlive/">tug.org/texlive</a>'),
         buildRow('latexmk', data.latexmk,
-            (d) => d.ok ? `v${d.version}` : 'Not found',
+            (d) => d.ok ? cleanVersion(d.version) : 'Not found',
             data.latexmk.fix ?? 'Install via TeX Live or your package manager'
         ),
         buildRow('LaTeX Workshop', { ok: latexWorkshopInstalled },
