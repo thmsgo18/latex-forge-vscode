@@ -1,3 +1,5 @@
+<p align="right"><b>English</b> | <a href="./README.fr.md">Français</a></p>
+
 <p align="center">
   <img src="logo.png" alt="LaTeX Forge for VS Code" width="420">
 </p>
