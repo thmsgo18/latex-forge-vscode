@@ -4,8 +4,6 @@
   <img src="logo.png" alt="LaTeX Forge for VS Code" width="420">
 </p>
 
-# LaTeX Forge for VS Code
-
 > **Create ready-to-write LaTeX projects, browse a gallery of 80+ templates, and manage your whole LaTeX setup, without leaving VS Code or touching a terminal.**
 
 This extension is the visual companion of the [LaTeX Forge CLI](https://github.com/thmsgo18/latex-forge): pick a template, name your project, and start writing. The PDF preview is already wired up.

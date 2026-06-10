@@ -18,17 +18,18 @@ suite('LaTeX Forge extension', () => {
         const expected = [
             'latex-forge.createProject',
             'latex-forge.renameProject',
+            'latex-forge.renameCurrentProject',
             'latex-forge.setupEnvironment',
             'latex-forge.listTemplates',
             'latex-forge.installTemplate',
             'latex-forge.browseGallery',
             'latex-forge.removeTemplate',
             'latex-forge.refreshTemplates',
+            'latex-forge.editProfile',
             'latex-forge.configureDefaults',
             'latex-forge.checkForUpdate',
-            'latex-forge.buildProject',
-            'latex-forge.cleanProject',
-            'latex-forge.openPdf'
+            'latex-forge.updateTemplates',
+            'latex-forge.diagnose'
         ];
         for (const command of expected) {
             assert.ok(commands.includes(command), `${command} should be registered`);
