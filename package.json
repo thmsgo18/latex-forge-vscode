@@ -2,7 +2,7 @@
   "name": "latex-forge-vscode",
   "displayName": "LaTeX Forge",
   "description": "Create and manage LaTeX Forge projects without leaving the editor",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "publisher": "thmsgo18",
   "license": "MIT",
   "repository": {
@@ -24,7 +24,9 @@
     "pdf",
     "templates"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onUri"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -90,6 +92,60 @@
         "command": "latex-forge.diagnose",
         "title": "LaTeX Forge: Diagnose Environment",
         "icon": "$(beaker)"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "latexForgeGettingStarted",
+        "title": "Get Started with LaTeX Forge",
+        "description": "Set up LaTeX Forge and create your first ready-to-write document.",
+        "icon": "media/activity-bar-icon.svg",
+        "steps": [
+          {
+            "id": "installCli",
+            "title": "Install the LaTeX Forge CLI",
+            "description": "Check your machine and install the LaTeX Forge CLI, LaTeX itself, and recommended VS Code extensions.\n[Run Setup](command:latex-forge.setupEnvironment)",
+            "media": {
+              "markdown": "walkthroughs/install-cli.md"
+            },
+            "completionEvents": [
+              "onCommand:latex-forge.setupEnvironment"
+            ]
+          },
+          {
+            "id": "createProject",
+            "title": "Create your first project",
+            "description": "Generate a complete document project — folder structure, styles, bibliography, and live PDF preview.\n[Create Project](command:latex-forge.createProject)",
+            "media": {
+              "markdown": "walkthroughs/create-project.md"
+            },
+            "completionEvents": [
+              "onCommand:latex-forge.createProject"
+            ]
+          },
+          {
+            "id": "browseGallery",
+            "title": "Browse the template gallery",
+            "description": "Explore 80+ curated templates with previews — CVs, theses, articles, posters, presentations.\n[Browse Gallery](command:latex-forge.browseGallery)",
+            "media": {
+              "markdown": "walkthroughs/browse-gallery.md"
+            },
+            "completionEvents": [
+              "onCommand:latex-forge.browseGallery"
+            ]
+          },
+          {
+            "id": "editProfile",
+            "title": "Set up your profile",
+            "description": "Save your name, email, and university once so every new project starts pre-filled.\n[Edit Profile](command:latex-forge.editProfile)",
+            "media": {
+              "markdown": "walkthroughs/edit-profile.md"
+            },
+            "completionEvents": [
+              "onCommand:latex-forge.editProfile"
+            ]
+          }
+        ]
       }
     ],
     "viewsContainers": {

@@ -4,6 +4,22 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-06-10
+
+### Added
+
+- **"Open in VS Code" gallery links**: the extension now registers a
+  `vscode://thmsgo18.latex-forge-vscode/install?template=<name>&installUrl=<url>`
+  URI handler. Clicking the new "Open in VS Code" button on the
+  [template gallery website](https://thmsgo18.github.io/latex-forge-gallery/)
+  installs the template and jumps straight into project creation — no
+  terminal needed.
+- **Getting Started walkthrough**: a "Get Started with LaTeX Forge" entry
+  appears on VS Code's Welcome page for new installs, walking through
+  setup, creating a first project, browsing the gallery, and configuring
+  your profile. Open it any time via **Help: Get Started** /
+  **Welcome: Open Walkthrough**.
+
 ## [0.1.10] - 2026-06-09
 
 ### Fixed

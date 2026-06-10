@@ -12,6 +12,8 @@ This extension is the visual companion of the [LaTeX Forge CLI](https://github.c
 
 That's it: pick a template, enter a name, choose a folder, and open your new project.
 
+A **Get Started with LaTeX Forge** walkthrough also appears on VS Code's Welcome page after install, walking through the same steps plus the gallery and your profile.
+
 ## Features
 
 All commands live in the Command Palette under the **LaTeX Forge:** prefix and stream their output to the **LaTeX Forge** output channel.
@@ -30,6 +32,8 @@ A panel inside VS Code showing the curated templates from the [gallery](https://
 - **View in gallery repo** — the template's source on GitHub
 
 Hovering a template in the Templates view also shows its preview image in a tooltip.
+
+The [gallery website](https://thmsgo18.github.io/latex-forge-gallery/) also has an **Open in VS Code** button on every template — clicking it installs the template in this extension and jumps straight into project creation.
 
 ### Templates view (activity bar)
 
@@ -95,7 +99,6 @@ This extension does not contribute VS Code settings. Defaults that influence `la
 ## Known Limitations
 
 - The extension requires the CLI to be installed separately (it will guide you if it's missing).
-- Gallery installs download the gallery archive, which can take a couple of minutes on slow connections.
 
 ## Release Notes
 

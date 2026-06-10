@@ -6,6 +6,7 @@ import { configureDefaultsCommand } from './commands/configureDefaults';
 import { createProjectCommand } from './commands/createProject';
 import { installTemplateCommand } from './commands/installTemplate';
 import { listTemplatesCommand } from './commands/listTemplates';
+import { createInstallUriHandler } from './commands/openFromUri';
 import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
@@ -78,6 +79,10 @@ export function activate(context: vscode.ExtensionContext): void {
         ),
         vscode.commands.registerCommand('latex-forge.checkForUpdate', () =>
             checkForCliUpdate(outputChannel, /* force */ true)
+        ),
+
+        vscode.window.registerUriHandler(
+            createInstallUriHandler(outputChannel, refreshTemplates, onInstallAndCreate)
         ),
     );
 
