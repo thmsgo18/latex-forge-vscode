@@ -12,7 +12,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   `vscode://thmsgo18.latex-forge-vscode/install?template=<name>&installUrl=<url>`
   URI handler. Clicking the new "Open in VS Code" button on the
   [template gallery website](https://thmsgo18.github.io/latex-forge-gallery/)
-  installs the template and jumps straight into project creation — no
+  installs the template and jumps straight into project creation, no
   terminal needed.
 - **Getting Started walkthrough**: a "Get Started with LaTeX Forge" entry
   appears on VS Code's Welcome page for new installs, walking through
@@ -61,7 +61,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ### Added
 
-- **Template list — JSON backend**: the Templates view and the template picker
+- **Template list (JSON backend)**: the Templates view and the template picker
   now use `latex-forge template list --json` instead of parsing human-readable
   text. User-installed templates display their installed version tag
   (e.g. `v1.2.0`) in the tree.
@@ -72,8 +72,8 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   `$(arrow-up)` toolbar button appears at the top of the Templates view.
 - **LaTeX Forge: Diagnose Environment** (`latex-forge.diagnose`): opens a
   webview dashboard that calls `latex-forge diagnose --json` and displays the
-  status of every required component — CLI version, pipx, TeX Live (with engine
-  list), latexmk, profile, and default template — with OK / Issue badges and
+  status of every required component: CLI version, pipx, TeX Live (with engine
+  list), latexmk, profile, and default template, with OK / Issue badges and
   inline fix hints. A `$(beaker)` toolbar button appears in the LaTeX Forge
   project view. The panel can be refreshed in place or used to launch the Setup
   Wizard directly.
@@ -82,15 +82,15 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ### Added
 
-- **Gallery — search bar**: a text input in the gallery toolbar lets you filter
+- **Gallery search bar**: a text input in the gallery toolbar lets you filter
   templates by name or description in real time, on top of the existing category
   filter.
-- **Gallery — "Installed" badges**: templates that are already installed locally
+- **Gallery "Installed" badges**: templates that are already installed locally
   are marked with a green **✓ Installed** badge in their card header. The badge
   also appears dynamically after a successful install within the current session.
-- **Gallery — "Install & Create" button**: each gallery card now has a second
+- **Gallery "Install & Create" button**: each gallery card now has a second
   action button. For a template that is not yet installed it reads **Install &
-  Create** — it installs the template then immediately opens the *Create
+  Create**: it installs the template then immediately opens the *Create
   Project* flow with that template pre-selected, skipping the template picker.
   Once installed the button reads **Create project** and skips the install step
   entirely.
@@ -137,10 +137,10 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ### Added
 
-- **Edit Profile** — a new panel accessible from the **LaTeX Forge** activity
+- **Edit Profile**: a new panel accessible from the **LaTeX Forge** activity
   bar view (or via `LaTeX Forge: Edit Profile` in the Command Palette). Opens a
-  webview form with four sections — **Identity**, **Online profiles**,
-  **Academic**, and **Professional** — matching the fields managed by
+  webview form with four sections (**Identity**, **Online profiles**,
+  **Academic**, and **Professional**) matching the fields managed by
   `latex-forge profile set` in the CLI. Values are saved to
   `~/.latex-forge/profile.toml` and are automatically applied when you create a
   new project (filled in by the CLI).
@@ -152,7 +152,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 - The activity bar panel is now always the same regardless of whether a LaTeX
   project is open or not:
   - The top **LaTeX Forge** view always shows **Create Project** and **Browse
-    Template Gallery** — one click from anywhere.
+    Template Gallery**, one click from anywhere.
   - The **Templates** view (collapsed by default) always lists installed
     templates below.
   - No more context detection, file watchers, or conditional visibility.
@@ -186,28 +186,28 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
     Folder** buttons; the **Templates** view appears below it (collapsed) so
     installed templates are always one click away.
 - The panel switches automatically when a `.tex` file is created or deleted, or
-  when the workspace folder changes — no restart required.
+  when the workspace folder changes, no restart required.
 
 ## [0.0.9] - 2026-06-09
 
 ### Added
 
 - **Project view** in the LaTeX Forge activity bar panel (above Templates):
-  three clickable items — **Build**, **Clean**, and **Open PDF** — that trigger
+  three clickable items (**Build**, **Clean**, and **Open PDF**) that trigger
   the corresponding commands with a single click, without going through the
   Command Palette.  The same three commands are also registered under
   `LaTeX Forge: Build`, `LaTeX Forge: Clean`, and `LaTeX Forge: Open PDF` in
   the Command Palette (⌘⇧P).  Icon buttons for all three also appear in the
   view's toolbar.  When no folder is open, a welcome message with quick-links
   to open or create a project is shown instead.
-- **LaTeX Forge: Build** — runs `latexmk` using the engine and flags defined
+- **LaTeX Forge: Build** runs `latexmk` using the engine and flags defined
   in the project's `.vscode/settings.json` (generated by `latex-forge create`).
   Falls back to `latexmk -lualatex -outdir=./build` when no settings file is
   present.  Streams live output to the "LaTeX Forge" channel.
-- **LaTeX Forge: Clean** — removes all build artefacts from the configured
+- **LaTeX Forge: Clean** removes all build artefacts from the configured
   output directory (and any stray artefacts at the workspace root) while
   keeping the compiled PDF intact.
-- **LaTeX Forge: Open PDF** — opens the compiled PDF directly in VS Code.
+- **LaTeX Forge: Open PDF** opens the compiled PDF directly in VS Code.
   Looks in the configured output directory first, then falls back to the
   workspace root.  Shows a picker when more than one PDF is found.
 
@@ -230,7 +230,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   a notification appears offering to run `pipx upgrade latex-forge`
   automatically, with live output in the "LaTeX Forge" channel.
 - **LaTeX Forge: Check for CLI Update** command: trigger the same check
-  manually from the Command Palette at any time — also reports "up to date"
+  manually from the Command Palette at any time; also reports "up to date"
   when the CLI is already on the latest version.
 
 ### Fixed
@@ -257,14 +257,14 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 - The Browse Template Gallery cards' "View source" link, which opened the
   upstream project the template was adapted from, is now a "View in gallery
   repo" link that opens the template's own folder in the `latex-forge-gallery`
-  repository on GitHub instead — i.e. the exact location the **Install** button
+  repository on GitHub instead, i.e. the exact location the **Install** button
   fetches from.
 
 ### Added
 
 - Gallery cards now show a "Preview PDF" link (when the gallery provides one)
   that opens a full-size, rendered PDF preview of the template in the
-  browser — useful since the thumbnail image in the card is small.
+  browser, useful since the thumbnail image in the card is small.
 
 ## [0.0.4] - 2026-06-08
 
@@ -274,7 +274,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   counter correctly but never actually hid the non-matching cards: it toggled
   the `hidden` attribute, which the browser implements via a `[hidden] {
   display: none }` rule that has the exact same specificity as this page's own
-  `.card { display: flex; ... }` rule — and the page's rule, declared later,
+  `.card { display: flex; ... }` rule, and the page's rule, declared later,
   won the cascade. The filter now toggles the cards' inline `display` style
   directly, which always takes precedence over stylesheet rules.
 
@@ -296,7 +296,7 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   the very first launch when VS Code was started from Finder, the Dock, or Spotlight: the
   editor starts with a minimal `PATH` from the OS and its own resolution of the user's
   shell `PATH` can time out with heavier shell setups (pyenv, nvm, etc.), leaving
-  `~/.local/bin` — pipx's default install location — out of the extension host's `PATH`
+  `~/.local/bin` (pipx's default install location) out of the extension host's `PATH`
   even though the CLI was correctly installed and reachable from any terminal. The
   extension now also looks in `~/.local/bin` when locating and running `latex-forge`.
 
