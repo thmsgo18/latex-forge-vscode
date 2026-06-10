@@ -120,6 +120,7 @@ Issues and pull requests are welcome on the [GitHub repository](https://github.c
 
 - [**latex-forge**](https://github.com/thmsgo18/latex-forge): the CLI this extension drives
 - [**latex-forge-gallery**](https://github.com/thmsgo18/latex-forge-gallery): the template gallery and its [browsable website](https://thmsgo18.github.io/latex-forge-gallery/)
+- [**latex-forge-skill**](https://github.com/thmsgo18/latex-forge-skill): a Claude skill that drives the whole workflow from a conversation
 
 ## Author
 
