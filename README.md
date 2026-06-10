@@ -4,6 +4,12 @@
   <img src="logo.png" alt="LaTeX Forge for VS Code" width="420">
 </p>
 
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=thmsgo18.latex-forge-vscode"><img src="https://img.shields.io/visual-studio-marketplace/v/thmsgo18.latex-forge-vscode?style=for-the-badge&label=marketplace&color=blue" alt="Visual Studio Marketplace"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License MIT"></a>
+  <a href="https://github.com/thmsgo18/latex-forge"><img src="https://img.shields.io/badge/works_with-latex--forge-blue?style=for-the-badge" alt="Works with latex-forge"></a>
+</p>
+
 > **Create ready-to-write LaTeX projects, browse a gallery of 80+ templates, and manage your whole LaTeX setup, without leaving VS Code or touching a terminal.**
 
 This extension is the visual companion of the [LaTeX Forge CLI](https://github.com/thmsgo18/latex-forge): pick a template, name your project, and start writing. The PDF preview is already wired up.
