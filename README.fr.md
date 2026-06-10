@@ -108,11 +108,6 @@ Cette extension n'ajoute aucun paramètre VS Code. Les valeurs par défaut qui i
 
 Voir le [CHANGELOG](https://github.com/thmsgo18/latex-forge-vscode/blob/main/CHANGELOG.md).
 
-## Related projects
-
-- [**latex-forge**](https://github.com/thmsgo18/latex-forge) : la CLI pilotée par cette extension
-- [**latex-forge-gallery**](https://github.com/thmsgo18/latex-forge-gallery) : la galerie de templates et son [site consultable](https://thmsgo18.github.io/latex-forge-gallery/)
-
 ## Contributing
 
 Les issues et pull requests sont les bienvenues sur le [dépôt GitHub](https://github.com/thmsgo18/latex-forge-vscode).
@@ -120,3 +115,12 @@ Les issues et pull requests sont les bienvenues sur le [dépôt GitHub](https://
 ## License
 
 [MIT](LICENSE)
+
+## Related projects
+
+- [**latex-forge**](https://github.com/thmsgo18/latex-forge) : la CLI pilotée par cette extension
+- [**latex-forge-gallery**](https://github.com/thmsgo18/latex-forge-gallery) : la galerie de templates et son [site consultable](https://thmsgo18.github.io/latex-forge-gallery/)
+
+## Auteur
+
+Réalisé par [thmsgo18](https://github.com/thmsgo18)
