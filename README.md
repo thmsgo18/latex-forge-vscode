@@ -110,7 +110,7 @@ See the [CHANGELOG](https://github.com/thmsgo18/latex-forge-vscode/blob/main/CHA
 
 ## Contributing
 
-Issues and pull requests are welcome on the [GitHub repository](https://github.com/thmsgo18/latex-forge-vscode).
+Issues and pull requests are welcome on the [GitHub repository](https://github.com/thmsgo18/latex-forge-vscode). See [CONTRIBUTING.md](CONTRIBUTING.md) for setting up the development environment, building, and testing.
 
 ## License
 
