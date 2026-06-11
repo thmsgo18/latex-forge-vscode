@@ -76,7 +76,7 @@ Lit et écrit `default_template` et `default_output_dir` dans `~/.latex-forge.to
 
 L'extension vérifie une fois par session si une nouvelle version de la CLI est disponible sur PyPI et propose un `pipx upgrade latex-forge` en un clic (également disponible manuellement via **Check for CLI Update**). Un élément de la barre d'état signale quand une mise à jour est disponible.
 
-## Commands
+## Commandes
 
 | Commande | Description |
 |---|---|
@@ -94,7 +94,7 @@ L'extension vérifie une fois par session si une nouvelle version de la CLI est 
 | `LaTeX Forge: Check for CLI Update` | Comparer la CLI installée avec PyPI |
 | `LaTeX Forge: Refresh Templates` | Recharger la vue Templates |
 
-## Requirements
+## Prérequis
 
 - La **CLI latex-forge** (`pipx install latex-forge`) : l'extension n'en est qu'une fine surcouche et ne duplique aucune de ses fonctionnalités.
 - Une **distribution LaTeX** pour compiler (l'extension peut l'installer pour vous via **Setup Environment**).
@@ -102,27 +102,27 @@ L'extension vérifie une fois par session si une nouvelle version de la CLI est 
 
 **Note sur la confidentialité :** le panneau de la galerie est la seule fonctionnalité qui communique sur le réseau (elle récupère `gallery.json` et les images d'aperçu depuis `raw.githubusercontent.com`, ainsi que la vérification de version sur PyPI). Tout le reste ne communique qu'avec la CLI locale.
 
-## Extension Settings
+## Paramètres de l'extension
 
 Cette extension n'ajoute aucun paramètre VS Code. Les valeurs par défaut qui influencent `latex-forge create` se trouvent dans `~/.latex-forge.toml` et sont gérées via **LaTeX Forge: Configure Defaults**.
 
-## Known Limitations
+## Limitations connues
 
 - L'extension nécessite que la CLI soit installée séparément (elle vous guide si elle est absente).
 
-## Release Notes
+## Notes de version
 
 Voir le [CHANGELOG](https://github.com/thmsgo18/latex-forge-vscode/blob/main/CHANGELOG.md).
 
-## Contributing
+## Contribuer
 
 Les issues et pull requests sont les bienvenues sur le [dépôt GitHub](https://github.com/thmsgo18/latex-forge-vscode). Voir [CONTRIBUTING.md](CONTRIBUTING.md) (en anglais) pour configurer l'environnement de développement, compiler et lancer les tests.
 
-## License
+## Licence
 
 [MIT](LICENSE)
 
-## Related projects
+## Projets liés
 
 - [**latex-forge**](https://github.com/thmsgo18/latex-forge) : la CLI pilotée par cette extension
 - [**latex-forge-gallery**](https://github.com/thmsgo18/latex-forge-gallery) : la galerie de templates et son [site consultable](https://thmsgo18.github.io/latex-forge-gallery/)
