@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=thmsgo18.latex-forge-vscode"><img src="https://img.shields.io/visual-studio-marketplace/v/thmsgo18.latex-forge-vscode?style=for-the-badge&label=marketplace&color=blue" alt="Visual Studio Marketplace"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=thmsgo18.latex-forge-vscode"><img src="https://vsmarketplacebadges.dev/version/thmsgo18.latex-forge-vscode.svg?style=for-the-badge&label=marketplace&color=blue" alt="Visual Studio Marketplace"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License MIT"></a>
   <a href="https://github.com/thmsgo18/latex-forge"><img src="https://img.shields.io/badge/works_with-latex--forge-blue?style=for-the-badge" alt="Works with latex-forge"></a>
 </p>
