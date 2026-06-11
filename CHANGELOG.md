@@ -4,6 +4,16 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-11
+
+### Added
+
+- Automated publishing to the VS Code Marketplace on version tags.
+
+### Changed
+
+- First stable release.
+
 ## [0.1.11] - 2026-06-10
 
 ### Added
