@@ -4,6 +4,14 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-06-11
+
+### Added
+
+- Extension icon and gallery banner on the VS Code Marketplace listing.
+- GitHub releases are now created automatically on publish, with the
+  packaged `.vsix` attached.
+
 ## [1.0.0] - 2026-06-11
 
 ### Added

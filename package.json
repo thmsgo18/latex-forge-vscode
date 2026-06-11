@@ -2,8 +2,13 @@
   "name": "latex-forge-vscode",
   "displayName": "LaTeX Forge",
   "description": "Create and manage LaTeX Forge projects without leaving the editor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "thmsgo18",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0a0a0a",
+    "theme": "dark"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
