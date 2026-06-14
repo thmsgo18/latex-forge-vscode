@@ -11,7 +11,7 @@ import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
 import { updateTemplatesCommand } from './commands/updateTemplates';
-import { checkForCliUpdate, setUpdateAvailableCallback } from './cliUpdater';
+import { checkForCliUpdate, setUpdateAppliedCallback, setUpdateAvailableCallback } from './cliUpdater';
 import { maybeOfferSetup } from './firstRun';
 import { ProjectTreeProvider } from './projectTreeProvider';
 import { StatusBarManager } from './statusBar';
@@ -26,9 +26,10 @@ export function activate(context: vscode.ExtensionContext): void {
     // update callback is registered in time.
     const statusBar = new StatusBarManager(context);
     setUpdateAvailableCallback((v) => statusBar.notifyUpdateAvailable(v));
+    setUpdateAppliedCallback(() => statusBar.clearUpdateAvailable());
 
     const projectProvider = new ProjectTreeProvider(context);
-    const templatesProvider = new TemplatesTreeProvider(outputChannel);
+    const templatesProvider = new TemplatesTreeProvider();
     const refreshTemplates = () => templatesProvider.refresh();
 
     // Callback used by "Install & Create" in the gallery: runs createProject
@@ -57,7 +58,7 @@ export function activate(context: vscode.ExtensionContext): void {
             listTemplatesCommand(outputChannel)
         ),
         vscode.commands.registerCommand('latex-forge.configureDefaults', () =>
-            configureDefaultsCommand(outputChannel)
+            configureDefaultsCommand()
         ),
         vscode.commands.registerCommand('latex-forge.refreshTemplates', refreshTemplates),
         vscode.commands.registerCommand('latex-forge.installTemplate', () =>

@@ -50,7 +50,7 @@ async function pickOutputDirectory(): Promise<string | undefined> {
     return picked?.[0]?.fsPath;
 }
 
-export async function configureDefaultsCommand(outputChannel: vscode.OutputChannel): Promise<void> {
+export async function configureDefaultsCommand(): Promise<void> {
     const config = await readConfig();
 
     const picked = await vscode.window.showQuickPick(buildMenuItems(config), {
@@ -63,7 +63,7 @@ export async function configureDefaultsCommand(outputChannel: vscode.OutputChann
 
     switch (picked.action.kind) {
         case 'setTemplate': {
-            const template = await pickTemplate(outputChannel, { title: 'LaTeX Forge: Set Default Template' });
+            const template = await pickTemplate({ title: 'LaTeX Forge: Set Default Template' });
             if (!template) {
                 return;
             }

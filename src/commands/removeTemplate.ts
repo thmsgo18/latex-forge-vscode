@@ -3,8 +3,8 @@ import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection'
 import { runLatexForge } from '../cliRunner';
 import { listTemplates } from '../templates';
 
-async function pickUserTemplate(outputChannel: vscode.OutputChannel): Promise<string | undefined> {
-    const templates = await listTemplates(outputChannel);
+async function pickUserTemplate(): Promise<string | undefined> {
+    const templates = await listTemplates();
     const userTemplates = templates.filter((template) => !template.builtin);
 
     if (userTemplates.length === 0) {
@@ -40,7 +40,7 @@ export async function removeTemplateCommand(
         return;
     }
 
-    const name = templateName ?? (await pickUserTemplate(outputChannel));
+    const name = templateName ?? (await pickUserTemplate());
     if (!name) {
         return;
     }

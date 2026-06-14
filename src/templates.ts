@@ -26,9 +26,7 @@ interface CliTemplateEntry {
 }
 
 /** Runs `latex-forge template list --json` and returns built-in and user-installed templates. */
-export async function listTemplates(
-    _outputChannel?: vscode.OutputChannel
-): Promise<TemplateInfo[]> {
+export async function listTemplates(): Promise<TemplateInfo[]> {
     const result = await execLatexForge(['template', 'list', '--json']);
     if (result.exitCode !== 0 || !result.stdout.trim()) {
         return [];
@@ -50,10 +48,9 @@ export async function listTemplates(
 
 /** Shows a QuickPick of all known templates (built-in and user-installed) and returns the chosen name. */
 export async function pickTemplate(
-    outputChannel: vscode.OutputChannel,
     options: { title?: string; placeHolder?: string } = {}
 ): Promise<string | undefined> {
-    const templates = await listTemplates(outputChannel);
+    const templates = await listTemplates();
     if (templates.length === 0) {
         await vscode.window.showErrorMessage('No LaTeX Forge templates were found. See the "LaTeX Forge" output channel for details.');
         return undefined;

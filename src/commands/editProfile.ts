@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as TOML from '@iarna/toml';
 import * as vscode from 'vscode';
+import { getNonce } from '../webviewUtils';
 
 // Schema (mirrors latex_forge/profile.py)
 
@@ -93,13 +94,6 @@ function clearProfile(): void {
             throw err;
         }
     }
-}
-
-// Nonce helper
-
-function getNonce(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
 // Webview HTML

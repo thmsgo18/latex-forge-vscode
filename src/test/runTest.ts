@@ -15,9 +15,9 @@ async function main(): Promise<void> {
         const vscodeExecutablePath = await downloadAndUnzipVSCode('stable');
 
         // Resolve the CLI entry point for the downloaded binary and install
-        // LaTeX Workshop before the test host starts.  Without this step VS Code
-        // refuses to activate LaTeX Forge because extensionDependencies lists LW
-        // as a required extension.
+        // LaTeX Workshop before the test host starts. It's listed in this
+        // extension's `extensionPack`, and diagnose.ts detects whether it's
+        // installed, so having it present keeps that code path exercised.
         const [cliPath, ...cliArgs] =
             resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 

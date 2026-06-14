@@ -10,8 +10,6 @@ export class TemplatesTreeProvider implements vscode.TreeDataProvider<TemplateIn
     private readonly previewUrls = new Map<string, string>();
     private galleryFetched = false;
 
-    constructor(private readonly outputChannel: vscode.OutputChannel) {}
-
     refresh(): void {
         this.galleryFetched = false;
         this._onDidChangeTreeData.fire();
@@ -58,7 +56,7 @@ export class TemplatesTreeProvider implements vscode.TreeDataProvider<TemplateIn
     }
 
     private async loadTemplates(): Promise<TemplateInfo[]> {
-        const templates = await listTemplates(this.outputChannel);
+        const templates = await listTemplates();
 
         // Fetch gallery preview URLs in the background (once per refresh cycle).
         // When they arrive, fire a change event so tooltips update.

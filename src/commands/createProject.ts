@@ -95,7 +95,7 @@ export async function createProjectCommand(
     // When called from "Install & Create" in the gallery the template is
     // already known — skip the picker to avoid a redundant step.
     const template = preselectedTemplate
-        ?? await pickTemplate(outputChannel, { title: 'LaTeX Forge: Create Project' });
+        ?? await pickTemplate({ title: 'LaTeX Forge: Create Project' });
     if (!template) {
         return;
     }

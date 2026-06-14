@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { execLatexForge } from '../cliRunner';
+import { getNonce } from '../webviewUtils';
 
 interface DiagItem {
     ok: boolean;
@@ -55,7 +56,7 @@ function renderDashboard(
     data: DiagnoseResult,
     latexWorkshopInstalled: boolean
 ): string {
-    const nonce = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+    const nonce = getNonce();
     const cspSource = webview.cspSource;
 
     const rows: Row[] = [
@@ -254,7 +255,7 @@ async function reloadPanel(outputChannel: vscode.OutputChannel): Promise<void> {
 }
 
 function buildLoadingHtml(webview: vscode.Webview): string {
-    const nonce = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+    const nonce = getNonce();
     return `<!DOCTYPE html>
 <html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'nonce-${nonce}';"/>
@@ -263,7 +264,7 @@ function buildLoadingHtml(webview: vscode.Webview): string {
 }
 
 function buildErrorHtml(webview: vscode.Webview, message: string): string {
-    const nonce = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+    const nonce = getNonce();
     return `<!DOCTYPE html>
 <html><head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'nonce-${nonce}';"/>

@@ -14,9 +14,17 @@ let sessionCheckDone = false;
 // Optional callback fired when a newer CLI version is detected.
 let _onUpdateAvailable: ((latestVersion: string) => void) | undefined;
 
+// Optional callback fired once a CLI upgrade has been applied successfully.
+let _onUpdateApplied: (() => void) | undefined;
+
 /** Register a callback that is called once when a CLI update is found. */
 export function setUpdateAvailableCallback(cb: (latestVersion: string) => void): void {
     _onUpdateAvailable = cb;
+}
+
+/** Register a callback that is called once a CLI upgrade completes successfully. */
+export function setUpdateAppliedCallback(cb: () => void): void {
+    _onUpdateApplied = cb;
 }
 
 // ---------------------------------------------------------------------------
@@ -169,6 +177,7 @@ export async function checkForCliUpdate(
     const success = await runPipxUpgrade(outputChannel);
 
     if (success) {
+        _onUpdateApplied?.();
         await vscode.window.showInformationMessage(
             `LaTeX Forge CLI updated to ${latest} successfully.`
         );

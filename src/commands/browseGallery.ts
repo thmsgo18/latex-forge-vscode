@@ -3,6 +3,7 @@ import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection'
 import { runLatexForge } from '../cliRunner';
 import { fetchGalleryTemplates, GalleryTemplate } from '../gallery';
 import { listTemplates } from '../templates';
+import { getNonce } from '../webviewUtils';
 
 const GALLERY_IMAGE_HOST = 'https://raw.githubusercontent.com';
 
@@ -102,7 +103,7 @@ async function loadGallery(
     try {
         const [galleryTemplates, installed] = await Promise.all([
             fetchGalleryTemplates(),
-            listTemplates(outputChannel)
+            listTemplates()
         ]);
         const installedNames = new Set(installed.map((t) => t.name));
         panel.webview.html = renderGallery(panel.webview, galleryTemplates, installedNames);
@@ -521,9 +522,4 @@ function escapeHtml(value: string): string {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
-}
-
-function getNonce(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }

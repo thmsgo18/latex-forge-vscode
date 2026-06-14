@@ -4,6 +4,11 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+### Fixed
+
+- The "update available" status bar indicator now clears itself after the
+  CLI is upgraded successfully, instead of persisting until the next reload.
+
 ## [1.0.1] - 2026-06-11
 
 ### Added
