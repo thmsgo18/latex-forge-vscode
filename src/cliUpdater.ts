@@ -151,7 +151,6 @@ export async function checkForCliUpdate(
     }
 
     if (!isNewer(installed, latest)) {
-        _onUpdateAvailable = undefined; // already up to date — clear any stale ref
         if (force) {
             await vscode.window.showInformationMessage(
                 `LaTeX Forge CLI is up to date (version ${installed}).`
