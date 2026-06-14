@@ -12,6 +12,7 @@ import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
 import { updateTemplatesCommand } from './commands/updateTemplates';
 import { checkForCliUpdate, setUpdateAvailableCallback } from './cliUpdater';
+import { maybeOfferSetup } from './firstRun';
 import { ProjectTreeProvider } from './projectTreeProvider';
 import { StatusBarManager } from './statusBar';
 import { TemplateInfo } from './templates';
@@ -88,6 +89,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Check for a CLI update silently in the background once per session.
     void checkForCliUpdate(outputChannel);
+
+    // On first activation ever, offer to install the CLI/LaTeX toolchain.
+    void maybeOfferSetup(context, outputChannel);
 }
 
 export function deactivate(): void {
