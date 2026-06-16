@@ -31,8 +31,14 @@ export function setUpdateAppliedCallback(cb: () => void): void {
 // Version helpers
 // ---------------------------------------------------------------------------
 
+// Minimum CLI version this extension is built against. The extension relies on
+// commands and JSON output formats (template list/update --json, diagnose
+// --json, the gallery install URLs) finalised in this release; against an older
+// CLI some features fail in confusing ways, so we warn the user up front.
+export const MIN_CLI_VERSION = '0.5.0';
+
 /** Parses "latex-forge X.Y.Z …" → "X.Y.Z", or null when the format is unexpected. */
-function parseVersionString(output: string): string | null {
+export function parseVersionString(output: string): string | null {
     const match = output.trim().match(/^latex-forge\s+(\d+\.\d+(?:\.\d+)*)/);
     return match ? match[1] : null;
 }
@@ -41,7 +47,7 @@ function parseVersionString(output: string): string | null {
  * Returns true when `latest` is strictly newer than `installed`.
  * Both strings are expected to be dot-separated integers ("X.Y.Z").
  */
-function isNewer(installed: string, latest: string): boolean {
+export function isNewer(installed: string, latest: string): boolean {
     const toNumbers = (v: string): number[] => v.split('.').map(Number);
     const a = toNumbers(installed);
     const b = toNumbers(latest);
@@ -52,6 +58,11 @@ function isNewer(installed: string, latest: string): boolean {
         }
     }
     return false;
+}
+
+/** True when the installed CLI is older than the minimum the extension supports. */
+export function isBelowMinimum(installed: string): boolean {
+    return isNewer(installed, MIN_CLI_VERSION);
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +125,45 @@ function runPipxUpgrade(outputChannel: vscode.OutputChannel): Promise<boolean> {
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
+
+/**
+ * Warns once if the installed CLI is older than {@link MIN_CLI_VERSION}, and
+ * offers to upgrade it. Returns true if it handled an out-of-date CLI, so the
+ * caller can skip the regular "update available" check and avoid a second
+ * dialog in the same session. Resolves immediately — never throws.
+ */
+export async function checkMinimumCliVersion(
+    outputChannel: vscode.OutputChannel
+): Promise<boolean> {
+    const installed = await getInstalledVersion();
+    if (!installed || !isBelowMinimum(installed)) {
+        return false;
+    }
+
+    // Don't also fire the PyPI "update available" check this session.
+    sessionCheckDone = true;
+
+    const choice = await vscode.window.showWarningMessage(
+        `LaTeX Forge CLI ${installed} is older than the minimum version this extension ` +
+        `supports (${MIN_CLI_VERSION}). Some features may not work correctly. Update now?`,
+        'Update now',
+        'Later'
+    );
+
+    if (choice === 'Update now') {
+        outputChannel.show(true);
+        const success = await runPipxUpgrade(outputChannel);
+        if (success) {
+            _onUpdateApplied?.();
+            await vscode.window.showInformationMessage('LaTeX Forge CLI updated successfully.');
+        } else {
+            await vscode.window.showErrorMessage(
+                'Failed to update the LaTeX Forge CLI. See the "LaTeX Forge" output channel for details.'
+            );
+        }
+    }
+    return true;
+}
 
 /**
  * Compares the installed CLI version against the latest version on PyPI.

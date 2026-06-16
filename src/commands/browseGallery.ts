@@ -16,6 +16,8 @@ interface WebviewToExtensionMessage {
     name?: string;
     installUrl?: string;
     url?: string;
+    /** True when the card is already installed, so the CLI needs --force to overwrite. */
+    force?: boolean;
 }
 
 interface ExtensionToWebviewMessage {
@@ -63,14 +65,14 @@ export async function browseGalleryCommand(
             case 'install':
                 if (msg.name && msg.installUrl) {
                     await runInstall(panel, outputChannel, msg.name, msg.installUrl, false,
-                        onTemplateInstalled, onInstallAndCreate);
+                        msg.force ?? false, onTemplateInstalled, onInstallAndCreate);
                 }
                 break;
 
             case 'installAndCreate':
                 if (msg.name && msg.installUrl) {
                     await runInstall(panel, outputChannel, msg.name, msg.installUrl, true,
-                        onTemplateInstalled, onInstallAndCreate);
+                        msg.force ?? false, onTemplateInstalled, onInstallAndCreate);
                 }
                 break;
 
@@ -129,11 +131,15 @@ async function runInstall(
     name: string,
     installUrl: string,
     andCreate: boolean,
+    force: boolean,
     onTemplateInstalled?: () => void,
     onInstallAndCreate?: (templateName: string) => Promise<void>
 ): Promise<void> {
     outputChannel.show(true);
-    const result = await runLatexForge(['template', 'install', installUrl], { outputChannel });
+    // Reinstalling an already-installed template requires --force; without it the
+    // CLI refuses to overwrite it (FileExistsError).
+    const args = force ? ['template', 'install', installUrl, '--force'] : ['template', 'install', installUrl];
+    const result = await runLatexForge(args, { outputChannel });
     const success = result.exitCode === 0;
 
     void panel.webview.postMessage({ type: 'installResult', name, success, andCreate } satisfies ExtensionToWebviewMessage);
@@ -226,7 +232,7 @@ function renderGallery(
                 installBtn.textContent    = 'Installing…';
                 installCreateBtn.disabled = true;
                 card.querySelector('.card-status').textContent = '';
-                vscode.postMessage({ type: 'install', name: card.dataset.name, installUrl: card.dataset.installUrl });
+                vscode.postMessage({ type: 'install', name: card.dataset.name, installUrl: card.dataset.installUrl, force: card.dataset.installed === 'true' });
             });
 
             installCreateBtn.addEventListener('click', () => {

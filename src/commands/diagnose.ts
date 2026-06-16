@@ -16,6 +16,8 @@ interface DiagnoseResult {
     pipx: DiagItem;
     texlive: DiagItem;
     latexmk: DiagItem;
+    /** Optional: only reported by CLI versions that check biber. */
+    biber?: DiagItem;
     profile: DiagItem;
     default_template: DiagItem;
 }
@@ -77,6 +79,13 @@ function renderDashboard(
             (d) => d.ok ? cleanVersion(d.version) : 'Not found',
             data.latexmk.fix ?? 'Install via TeX Live or your package manager'
         ),
+        // biber is only present in the JSON from CLI versions that check it;
+        // skip the row entirely on older CLIs rather than rendering undefined.
+        ...(data.biber
+            ? [buildRow('biber', data.biber,
+                (d) => d.ok ? cleanVersion(d.version) : 'Not found',
+                data.biber.fix ?? 'Install via TeX Live: tlmgr install biber')]
+            : []),
         buildRow('LaTeX Workshop', { ok: latexWorkshopInstalled },
             (d) => d.ok ? 'Installed' : 'Not installed',
             'Install from VS Code Marketplace: James-Yu.latex-workshop',
@@ -89,7 +98,7 @@ function renderDashboard(
         ),
         buildRow('Default template', data.default_template,
             (d) => d.ok ? (d.value ?? 'set') : 'Not set',
-            'Run: latex-forge config set default_template &lt;name&gt;',
+            'Run "LaTeX Forge: Configure Defaults" to set a default template',
             true /* optional */
         )
     ];

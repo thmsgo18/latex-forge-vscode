@@ -11,7 +11,7 @@ import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
 import { updateTemplatesCommand } from './commands/updateTemplates';
-import { checkForCliUpdate, setUpdateAppliedCallback, setUpdateAvailableCallback } from './cliUpdater';
+import { checkForCliUpdate, checkMinimumCliVersion, setUpdateAppliedCallback, setUpdateAvailableCallback } from './cliUpdater';
 import { maybeOfferSetup } from './firstRun';
 import { ProjectTreeProvider } from './projectTreeProvider';
 import { StatusBarManager } from './statusBar';
@@ -88,8 +88,14 @@ export function activate(context: vscode.ExtensionContext): void {
         ),
     );
 
-    // Check for a CLI update silently in the background once per session.
-    void checkForCliUpdate(outputChannel);
+    // Once per session: warn if the CLI is too old; otherwise check PyPI for a
+    // newer version. Skipping the update check when we already warned about an
+    // outdated CLI avoids showing the user two dialogs at once.
+    void checkMinimumCliVersion(outputChannel).then((handled) => {
+        if (!handled) {
+            void checkForCliUpdate(outputChannel);
+        }
+    });
 
     // On first activation ever, offer to install the CLI/LaTeX toolchain.
     void maybeOfferSetup(context, outputChannel);

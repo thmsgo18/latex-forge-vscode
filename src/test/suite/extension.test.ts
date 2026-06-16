@@ -1,5 +1,27 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import { MIN_CLI_VERSION, isBelowMinimum, isNewer, parseVersionString } from '../../cliUpdater';
+
+suite('CLI version helpers', () => {
+    test('parseVersionString extracts the version', () => {
+        assert.strictEqual(parseVersionString('latex-forge 0.5.2'), '0.5.2');
+        assert.strictEqual(parseVersionString('latex-forge 1.0.0 (extra)'), '1.0.0');
+        assert.strictEqual(parseVersionString('garbage'), null);
+    });
+
+    test('isNewer compares dotted versions', () => {
+        assert.strictEqual(isNewer('0.4.0', '0.5.0'), true);
+        assert.strictEqual(isNewer('0.5.0', '0.5.0'), false);
+        assert.strictEqual(isNewer('0.5.1', '0.5.0'), false);
+        assert.strictEqual(isNewer('0.5', '0.5.1'), true);
+    });
+
+    test('isBelowMinimum flags versions older than the supported floor', () => {
+        assert.strictEqual(isBelowMinimum('0.4.9'), true);
+        assert.strictEqual(isBelowMinimum(MIN_CLI_VERSION), false);
+        assert.strictEqual(isBelowMinimum('1.0.0'), false);
+    });
+});
 
 suite('LaTeX Forge extension', () => {
     suiteSetup(async () => {
