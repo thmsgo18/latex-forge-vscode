@@ -3,10 +3,22 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
-import { readConfig } from '../config';
+import { RepoMode, SharingMode, Visibility, readConfig } from '../config';
+import { isGhAuthenticated, isGhCliAvailable, promptGhLogin, promptInstallGhCli } from '../githubDetection';
 import { pickTemplate } from '../templates';
 
 const PROJECT_NAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
+
+const REPO_MODE_ITEMS: { label: string; detail: string; mode: RepoMode }[] = [
+    { label: 'Create a new GitHub repository', detail: 'gh creates it for you and pushes the initial commit', mode: 'create' },
+    { label: 'This folder is already versioned', detail: 'e.g. a subfolder of an existing GitHub repo — nothing git-related is touched', mode: 'existing' },
+    { label: "Don't version this project", detail: 'Fully local, nothing tracked', mode: 'none' }
+];
+
+const SHARING_ITEMS: { label: string; detail: string; sharing: SharingMode }[] = [
+    { label: 'full', detail: 'Share the LaTeX sources and the compiled PDF', sharing: 'full' },
+    { label: 'pdf-only', detail: 'Share only the compiled PDF, keep sources local', sharing: 'pdf-only' }
+];
 
 /**
  * Returns true if the given folder looks like an existing LaTeX project,
@@ -18,17 +30,6 @@ function looksLikeLatexProject(folderPath: string): boolean {
     } catch {
         return false;
     }
-}
-
-async function askInitGit(): Promise<boolean | undefined> {
-    const picked = await vscode.window.showQuickPick(
-        [
-            { label: 'Yes', value: true },
-            { label: 'No', value: false }
-        ],
-        { title: 'LaTeX Forge: Create Project', placeHolder: 'Initialize a git repository?' }
-    );
-    return picked?.value;
 }
 
 async function askProjectName(): Promise<string | undefined> {
@@ -95,6 +96,50 @@ async function pickOutputDirectory(): Promise<string | undefined> {
     return undefined;
 }
 
+async function askRepoMode(defaultMode: RepoMode): Promise<RepoMode | undefined> {
+    const items = REPO_MODE_ITEMS.map((item) => ({
+        ...item,
+        description: item.mode === defaultMode ? '(default)' : undefined
+    }));
+    const picked = await vscode.window.showQuickPick(items, {
+        title: 'LaTeX Forge: Create Project',
+        placeHolder: 'How should this project be versioned?'
+    });
+    return picked?.mode;
+}
+
+async function askRepoName(defaultName: string): Promise<string | undefined> {
+    return vscode.window.showInputBox({
+        title: 'LaTeX Forge: Create Project',
+        prompt: 'Name of the GitHub repository to create',
+        value: defaultName
+    });
+}
+
+async function askVisibility(defaultVisibility: Visibility): Promise<Visibility | undefined> {
+    const items: { label: string; visibility: Visibility }[] = [
+        { label: 'private', visibility: 'private' },
+        { label: 'public', visibility: 'public' }
+    ];
+    const picked = await vscode.window.showQuickPick(
+        items.map((item) => ({ ...item, description: item.visibility === defaultVisibility ? '(default)' : undefined })),
+        { title: 'LaTeX Forge: Create Project', placeHolder: 'Visibility of the new GitHub repository' }
+    );
+    return picked?.visibility;
+}
+
+async function askSharing(defaultSharing: SharingMode): Promise<SharingMode | undefined> {
+    const items = SHARING_ITEMS.map((item) => ({
+        ...item,
+        description: item.sharing === defaultSharing ? '(default)' : undefined
+    }));
+    const picked = await vscode.window.showQuickPick(items, {
+        title: 'LaTeX Forge: Create Project',
+        placeHolder: 'What should be versioned?'
+    });
+    return picked?.sharing;
+}
+
 export async function createProjectCommand(
     outputChannel: vscode.OutputChannel,
     preselectedTemplate?: string
@@ -116,26 +161,70 @@ export async function createProjectCommand(
     if (!name) {
         return;
     }
+    const trimmedName = name.trim();
 
     const outputDirectory = await pickOutputDirectory();
     if (!outputDirectory) {
         return;
     }
 
-    const initGit = await askInitGit();
-    if (initGit === undefined) {
+    const config = await readConfig();
+
+    const repoMode = await askRepoMode(config.defaultRepoMode ?? 'none');
+    if (!repoMode) {
         return;
     }
 
-    const config = await readConfig();
-    const sharing = config.defaultSharing ?? 'full';
+    let repoName: string | undefined;
+    let visibility: Visibility | undefined;
 
-    const args = ['create', '--name', name.trim(), '--template', template, '--output', outputDirectory, '--sharing', sharing];
-    if (initGit) {
-        args.push('--git');
-        if (sharing !== 'none' && config.buildBeforeCommit) {
+    if (repoMode === 'create') {
+        if (!(await isGhCliAvailable())) {
+            await promptInstallGhCli();
+            return;
+        }
+        if (!(await isGhAuthenticated())) {
+            await promptGhLogin();
+            return;
+        }
+
+        repoName = await askRepoName(trimmedName);
+        if (!repoName) {
+            return;
+        }
+
+        visibility = await askVisibility(config.defaultVisibility ?? 'private');
+        if (!visibility) {
+            return;
+        }
+
+        const confirmed = await vscode.window.showWarningMessage(
+            `Create a ${visibility} repository named "${repoName}" on your GitHub account?`,
+            { modal: true },
+            'Create'
+        );
+        if (confirmed !== 'Create') {
+            return;
+        }
+    }
+
+    let sharing: SharingMode | undefined;
+    if (repoMode === 'create' || repoMode === 'existing') {
+        sharing = await askSharing(config.defaultSharing ?? 'full');
+        if (!sharing) {
+            return;
+        }
+    }
+
+    const args = ['create', '--name', trimmedName, '--template', template, '--output', outputDirectory, '--repo', repoMode];
+    if (repoMode === 'create') {
+        args.push('--repo-name', repoName!, '--visibility', visibility!);
+        if (config.buildBeforeCommit) {
             args.push('--build-before-commit');
         }
+    }
+    if (sharing) {
+        args.push('--sharing', sharing);
     }
 
     outputChannel.show(true);
@@ -143,9 +232,11 @@ export async function createProjectCommand(
     const result = await runLatexForge(args, { outputChannel });
 
     if (result.exitCode === 0) {
-        const projectPath = path.join(outputDirectory, name.trim());
+        const projectPath = path.join(outputDirectory, trimmedName);
+        const repoUrlLine = result.stdout.split('\n').find((line) => line.startsWith('GitHub repo: '));
+        const repoSuffix = repoUrlLine ? ` — ${repoUrlLine.replace('GitHub repo: ', '').trim()}` : '';
         const choice = await vscode.window.showInformationMessage(
-            `LaTeX Forge project "${name.trim()}" created successfully (sharing: ${sharing}).`,
+            `LaTeX Forge project "${trimmedName}" created successfully (versioning: ${repoMode})${repoSuffix}.`,
             'Open Project'
         );
         if (choice === 'Open Project') {

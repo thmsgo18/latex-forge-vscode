@@ -4,6 +4,28 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-31
+
+### Added
+
+- "Create Project" now asks how to version the project on every run: create
+  a new GitHub repository (name, visibility, and a confirmation before it's
+  actually created), attach to a folder that's already versioned, or don't
+  version it at all. When creating a repository, the GitHub CLI (`gh`) is
+  detected the same way the `latex-forge` CLI itself is, with prompts to
+  install it or run `gh auth login` if needed.
+- "Configure Defaults" gained default versioning mode and default new-repo
+  visibility settings, pre-selecting (not skipping) the corresponding
+  questions in the wizard.
+- "Setup Environment" gained an "Install the GitHub CLI" option.
+
+### Changed
+
+- **Breaking**: the previous Yes/No "Initialize a git repository?" step and
+  the silent default-sharing behavior are replaced by the versioning
+  question above; sharing (`full`/`pdf-only`) is now asked explicitly
+  whenever versioning is enabled instead of applied silently.
+
 ## [1.1.0] - 2026-07-31
 
 ### Added

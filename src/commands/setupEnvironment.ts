@@ -24,6 +24,12 @@ const SETUP_OPTIONS: SetupOption[] = [
         label: 'Install a LaTeX distribution',
         description: '--install-tex',
         detail: 'Try to install a LaTeX distribution with a common package manager for the current OS.'
+    },
+    {
+        flag: '--install-gh',
+        label: 'Install the GitHub CLI',
+        description: '--install-gh',
+        detail: 'Try to install the GitHub CLI (gh) with a common package manager. Needed to create a new GitHub repository from "Create Project".'
     }
 ];
 

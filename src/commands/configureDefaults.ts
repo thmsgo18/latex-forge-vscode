@@ -1,11 +1,31 @@
 import * as vscode from 'vscode';
-import { LatexForgeConfig, SHARING_MODES, SharingMode, readConfig, writeConfig } from '../config';
+import {
+    LatexForgeConfig,
+    REPO_MODES,
+    RepoMode,
+    SHARING_MODES,
+    SharingMode,
+    VISIBILITIES,
+    Visibility,
+    readConfig,
+    writeConfig
+} from '../config';
 import { pickTemplate } from '../templates';
 
 const SHARING_MODE_LABELS: Record<SharingMode, string> = {
     full: 'full — LaTeX sources + compiled PDF',
-    'pdf-only': 'pdf-only — compiled PDF only, sources stay local',
-    none: 'none — nothing tracked, project stays local'
+    'pdf-only': 'pdf-only — compiled PDF only, sources stay local'
+};
+
+const REPO_MODE_LABELS: Record<RepoMode, string> = {
+    create: 'create — create a new GitHub repository',
+    existing: 'existing — this folder is already inside a versioned folder',
+    none: "none — don't version the project"
+};
+
+const VISIBILITY_LABELS: Record<Visibility, string> = {
+    private: 'private',
+    public: 'public'
 };
 
 type ConfigAction =
@@ -14,7 +34,9 @@ type ConfigAction =
     | { kind: 'setOutputDir' }
     | { kind: 'clearOutputDir' }
     | { kind: 'setSharing' }
-    | { kind: 'toggleBuildBeforeCommit' };
+    | { kind: 'toggleBuildBeforeCommit' }
+    | { kind: 'setRepoMode' }
+    | { kind: 'setVisibility' };
 
 interface ConfigQuickPickItem extends vscode.QuickPickItem {
     action: ConfigAction;
@@ -44,15 +66,27 @@ function buildMenuItems(config: LatexForgeConfig): ConfigQuickPickItem[] {
     }
 
     items.push({
+        label: '$(source-control) Set default versioning mode…',
+        description: `currently "${config.defaultRepoMode ?? 'none'}" (pre-selects the question asked on every "Create Project")`,
+        action: { kind: 'setRepoMode' }
+    });
+
+    items.push({
         label: '$(git-branch) Set default sharing mode…',
         description: `currently "${config.defaultSharing ?? 'full'}"`,
         action: { kind: 'setSharing' }
     });
 
+    items.push({
+        label: '$(lock) Set default new-repo visibility…',
+        description: `currently "${config.defaultVisibility ?? 'private'}"`,
+        action: { kind: 'setVisibility' }
+    });
+
     const buildBeforeCommit = config.buildBeforeCommit ?? false;
     items.push({
         label: `$(sync) Auto-build before initial git commit: ${buildBeforeCommit ? 'on' : 'off'}`,
-        description: 'Only applies when "Initialize git repository?" is Yes and the sharing mode includes a PDF',
+        description: 'Only applies when creating a new GitHub repository with a PDF-sharing mode',
         action: { kind: 'toggleBuildBeforeCommit' }
     });
 
@@ -65,6 +99,22 @@ async function pickSharingMode(): Promise<SharingMode | undefined> {
         { title: 'LaTeX Forge: Set Default Sharing Mode' }
     );
     return picked?.mode;
+}
+
+async function pickRepoMode(): Promise<RepoMode | undefined> {
+    const picked = await vscode.window.showQuickPick(
+        REPO_MODES.map((mode) => ({ label: REPO_MODE_LABELS[mode], mode })),
+        { title: 'LaTeX Forge: Set Default Versioning Mode' }
+    );
+    return picked?.mode;
+}
+
+async function pickVisibility(): Promise<Visibility | undefined> {
+    const picked = await vscode.window.showQuickPick(
+        VISIBILITIES.map((visibility) => ({ label: VISIBILITY_LABELS[visibility], visibility })),
+        { title: 'LaTeX Forge: Set Default New-Repo Visibility' }
+    );
+    return picked?.visibility;
 }
 
 async function pickOutputDirectory(): Promise<string | undefined> {
@@ -134,6 +184,24 @@ export async function configureDefaultsCommand(): Promise<void> {
             await vscode.window.showInformationMessage(
                 `Auto-build before initial git commit turned ${next ? 'on' : 'off'}.`
             );
+            break;
+        }
+        case 'setRepoMode': {
+            const mode = await pickRepoMode();
+            if (!mode) {
+                return;
+            }
+            await writeConfig({ ...config, defaultRepoMode: mode });
+            await vscode.window.showInformationMessage(`Default versioning mode set to "${mode}".`);
+            break;
+        }
+        case 'setVisibility': {
+            const visibility = await pickVisibility();
+            if (!visibility) {
+                return;
+            }
+            await writeConfig({ ...config, defaultVisibility: visibility });
+            await vscode.window.showInformationMessage(`Default new-repo visibility set to "${visibility}".`);
             break;
         }
     }
