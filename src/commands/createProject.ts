@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
+import { readConfig } from '../config';
 import { pickTemplate } from '../templates';
 
 const PROJECT_NAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
@@ -17,6 +18,17 @@ function looksLikeLatexProject(folderPath: string): boolean {
     } catch {
         return false;
     }
+}
+
+async function askInitGit(): Promise<boolean | undefined> {
+    const picked = await vscode.window.showQuickPick(
+        [
+            { label: 'Yes', value: true },
+            { label: 'No', value: false }
+        ],
+        { title: 'LaTeX Forge: Create Project', placeHolder: 'Initialize a git repository?' }
+    );
+    return picked?.value;
 }
 
 async function askProjectName(): Promise<string | undefined> {
@@ -110,17 +122,30 @@ export async function createProjectCommand(
         return;
     }
 
+    const initGit = await askInitGit();
+    if (initGit === undefined) {
+        return;
+    }
+
+    const config = await readConfig();
+    const sharing = config.defaultSharing ?? 'full';
+
+    const args = ['create', '--name', name.trim(), '--template', template, '--output', outputDirectory, '--sharing', sharing];
+    if (initGit) {
+        args.push('--git');
+        if (sharing !== 'none' && config.buildBeforeCommit) {
+            args.push('--build-before-commit');
+        }
+    }
+
     outputChannel.show(true);
 
-    const result = await runLatexForge(
-        ['create', '--name', name.trim(), '--template', template, '--output', outputDirectory],
-        { outputChannel }
-    );
+    const result = await runLatexForge(args, { outputChannel });
 
     if (result.exitCode === 0) {
         const projectPath = path.join(outputDirectory, name.trim());
         const choice = await vscode.window.showInformationMessage(
-            `LaTeX Forge project "${name.trim()}" created successfully.`,
+            `LaTeX Forge project "${name.trim()}" created successfully (sharing: ${sharing}).`,
             'Open Project'
         );
         if (choice === 'Open Project') {

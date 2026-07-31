@@ -4,6 +4,18 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-31
+
+### Added
+
+- "Create Project" now asks whether to initialize a git repository, and
+  applies the configured default sharing mode (`full`, `pdf-only`, `none`)
+  and "auto-build before initial commit" preference automatically.
+- "Configure Defaults" gained two new settings: default sharing mode, and
+  whether to build the project once before the initial git commit so the
+  compiled PDF is included right away (when git init is used with a
+  PDF-sharing mode).
+
 ### Fixed
 
 - The "update available" status bar indicator now clears itself after the
