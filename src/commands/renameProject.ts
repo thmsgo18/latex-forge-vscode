@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
+import { ensureCliAvailable } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
 
 const PROJECT_NAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
@@ -51,8 +51,7 @@ export async function renameProjectCommand(
     outputChannel: vscode.OutputChannel,
     folderPath?: string
 ): Promise<void> {
-    if (!(await isLatexForgeAvailable())) {
-        await promptInstallLatexForge();
+    if (!(await ensureCliAvailable())) {
         return;
     }
 

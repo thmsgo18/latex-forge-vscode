@@ -1,45 +1,38 @@
 import * as vscode from 'vscode';
 import { execLatexForge } from '../cliRunner';
+import { DiagItem, DiagnoseResult, parseDiagnose } from '../environment';
 import { getNonce } from '../webviewUtils';
-
-interface DiagItem {
-    ok: boolean;
-    version?: string;
-    engines?: string[];
-    fix?: string;
-    path?: string;
-    value?: string;
-}
-
-interface DiagnoseResult {
-    latex_forge: DiagItem;
-    pipx: DiagItem;
-    texlive: DiagItem;
-    latexmk: DiagItem;
-    /** Optional: only reported by CLI versions that check biber. */
-    biber?: DiagItem;
-    profile: DiagItem;
-    default_template: DiagItem;
-}
 
 interface Row {
     ok: boolean;
     optional: boolean;
     label: string;
     detail: string;
+    /** May contain markup (links, <code>); everything else is escaped. */
     fix: string;
 }
 
 let panel: vscode.WebviewPanel | undefined;
+let lastAllOk = true;
+
+/** Escapes text coming from the CLI before it goes into the webview's HTML. */
+export function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 /**
  * Extracts a clean version number from a raw version string.
  * Handles cases like "Latexmk, John Collins, 9 March 2026. Version 4.88"
  * by looking for a "Version X.YY" pattern, falling back to the raw string.
  */
-function cleanVersion(raw: string | undefined): string {
+function cleanVersion(raw: string | null | undefined): string {
     if (!raw) { return 'installed'; }
-    const match = raw.match(/Version\s+(\S+)/i);
+    const match = raw.match(/Version\s+(\S+)/i) ?? raw.match(/version:?\s+(\S+)/i);
     return `v${match ? match[1] : raw}`;
 }
 
@@ -50,8 +43,10 @@ function buildRow(
     fixText: string,
     optional = false
 ): Row {
-    return { ok: item.ok, optional, label, detail: detailFn(item), fix: fixText };
+    return { ok: item.ok, optional, label, detail: escapeHtml(detailFn(item)), fix: fixText };
 }
+
+const SETUP_FIX = 'Click <b>Install everything</b> below — no administrator password needed';
 
 function renderDashboard(
     webview: vscode.Webview,
@@ -60,37 +55,61 @@ function renderDashboard(
 ): string {
     const nonce = getNonce();
     const cspSource = webview.cspSource;
+    const dist = data.tex_distribution;
+    const install = data.cli_install;
+    const fixOf = (item: DiagItem | undefined, fallback: string) =>
+        item?.fix ? `Run: <code>${escapeHtml(item.fix)}</code>` : fallback;
 
     const rows: Row[] = [
         buildRow('LaTeX Forge CLI', data.latex_forge,
-            (d) => d.ok ? cleanVersion(d.version) : 'Not found',
-            'Run: pipx install latex-forge'
+            (d) => {
+                if (!d.ok) { return 'Not found'; }
+                const how = install ? ` — installed with ${install.method}, Python ${install.python}` : '';
+                return `${cleanVersion(d.version)}${how}`;
+            },
+            SETUP_FIX
         ),
-        buildRow('pipx', data.pipx,
-            (d) => d.ok ? cleanVersion(d.version) : 'Not found',
-            'See <a href="https://pipx.pypa.io">pipx.pypa.io</a>'
-        ),
-        buildRow('TeX Live', data.texlive, (d) => {
+        buildRow('LaTeX distribution', data.texlive, (d) => {
             if (!d.ok) { return 'Not found'; }
             const engines = d.engines?.length ? ` (${d.engines.join(', ')})` : '';
-            return `${cleanVersion(d.version)}${engines}`;
-        }, data.texlive.fix ?? 'Install TeX Live: <a href="https://tug.org/texlive/">tug.org/texlive</a>'),
+            const label = dist?.label ?? (d.version ? `TeX Live ${d.version}` : 'TeX Live');
+            const where = dist?.bin_dir ? ` — ${dist.bin_dir}` : '';
+            return `${label}${engines}${where}`;
+        }, SETUP_FIX),
         buildRow('latexmk', data.latexmk,
-            (d) => d.ok ? cleanVersion(d.version) : 'Not found',
-            data.latexmk.fix ?? 'Install via TeX Live or your package manager'
+            (d) => d.ok ? cleanVersion(d.version) : 'Not working',
+            data.texlive.ok ? fixOf(data.latexmk, SETUP_FIX) : SETUP_FIX
         ),
         // biber is only present in the JSON from CLI versions that check it;
         // skip the row entirely on older CLIs rather than rendering undefined.
         ...(data.biber
             ? [buildRow('biber', data.biber,
                 (d) => d.ok ? cleanVersion(d.version) : 'Not found',
-                data.biber.fix ?? 'Install via TeX Live: tlmgr install biber')]
+                data.texlive.ok ? fixOf(data.biber, 'Run: <code>tlmgr install biber</code>') : SETUP_FIX)]
+            : []),
+        ...(dist && dist.ok
+            ? [buildRow('Missing packages', { ok: dist.can_install_packages },
+                (d) => d.ok
+                    ? 'Installed automatically when a document needs them'
+                    : 'Not installed automatically with this distribution',
+                dist.kind === 'texlive'
+                    ? 'Install them with <code>sudo tlmgr install &lt;package&gt;</code> (see the build output)'
+                    : 'Install them with your system package manager',
+                true /* optional */)]
             : []),
         buildRow('LaTeX Workshop', { ok: latexWorkshopInstalled },
             (d) => d.ok ? 'Installed' : 'Not installed',
             'Install from VS Code Marketplace: James-Yu.latex-workshop',
             true /* optional */
         ),
+        ...(data.gh_cli
+            ? [buildRow('GitHub CLI', { ok: data.gh_cli.ok && !!data.gh_cli.authenticated },
+                () => !data.gh_cli!.ok ? 'Not found' : (data.gh_cli!.authenticated ? cleanVersion(data.gh_cli!.version) : 'Not logged in'),
+                !data.gh_cli.ok
+                    ? 'Only needed to create GitHub repositories: <b>Setup Environment → Install the GitHub CLI</b>'
+                    : 'Run <code>gh auth login</code> in a terminal',
+                true /* optional */)]
+            : []),
         buildRow('Profile', data.profile,
             (d) => d.ok ? (d.path ?? 'configured') : 'Not configured',
             'Open "LaTeX Forge: Edit Profile" to fill in your details',
@@ -105,6 +124,7 @@ function renderDashboard(
 
     const requiredRows = rows.filter((r) => !r.optional);
     const allRequiredOk = requiredRows.every((r) => r.ok);
+    lastAllOk = allRequiredOk;
     const summaryClass = allRequiredOk ? 'summary-ok' : 'summary-warn';
     const summaryText = allRequiredOk
         ? 'All required components are installed and ready.'
@@ -188,7 +208,7 @@ function renderDashboard(
     </table>
     <div class="actions">
         <button id="refresh-btn">Refresh</button>
-        <button class="secondary" id="setup-btn">Run setup wizard</button>
+        <button class="${allRequiredOk ? 'secondary' : ''}" id="setup-btn">${allRequiredOk ? 'Setup options…' : 'Install everything'}</button>
     </div>
     <script nonce="${nonce}">
         const vscode = acquireVsCodeApi();
@@ -227,7 +247,8 @@ export async function diagnoseCommand(
         if (msg.type === 'refresh') {
             await reloadPanel(outputChannel);
         } else if (msg.type === 'setup') {
-            await vscode.commands.executeCommand('latex-forge.setupEnvironment');
+            await vscode.commands.executeCommand(lastAllOk ? 'latex-forge.setupEnvironment' : 'latex-forge.installEverything');
+            await reloadPanel(outputChannel);
         }
     });
 
@@ -245,15 +266,18 @@ async function reloadPanel(outputChannel: vscode.OutputChannel): Promise<void> {
     const result = await execLatexForge(['diagnose', '--json']);
 
     if (!result.stdout.trim()) {
+        // The CLI itself is missing (or broken): that's what setup fixes.
         outputChannel.appendLine('LaTeX Forge diagnose: no output received.');
-        panel.webview.html = buildErrorHtml(panel.webview, 'No output from diagnose command.');
+        lastAllOk = false;
+        panel.webview.html = buildErrorHtml(
+            panel.webview,
+            'The LaTeX Forge CLI is not installed (or does not run).'
+        );
         return;
     }
 
-    let data: DiagnoseResult;
-    try {
-        data = JSON.parse(result.stdout);
-    } catch {
+    const data = parseDiagnose(result.stdout);
+    if (!data) {
         outputChannel.appendLine('LaTeX Forge diagnose: could not parse JSON output.');
         outputChannel.appendLine(result.stdout);
         panel.webview.html = buildErrorHtml(panel.webview, 'Could not parse diagnose output.');
@@ -276,7 +300,22 @@ function buildErrorHtml(webview: vscode.Webview, message: string): string {
     const nonce = getNonce();
     return `<!DOCTYPE html>
 <html><head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'nonce-${nonce}';"/>
-<style nonce="${nonce}">body{font-family:var(--vscode-font-family);color:var(--vscode-editor-foreground);background:var(--vscode-editor-background);padding:24px;}</style>
-</head><body><p style="color:#e53935">Error: ${message}</p><p>See the "LaTeX Forge" output channel for details.</p></body></html>`;
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'nonce-${nonce}'; script-src 'nonce-${nonce}';"/>
+<style nonce="${nonce}">
+body{font-family:var(--vscode-font-family);color:var(--vscode-editor-foreground);background:var(--vscode-editor-background);padding:24px;}
+.error{color:#e53935;}
+button{background:var(--vscode-button-background);color:var(--vscode-button-foreground);border:none;border-radius:3px;padding:6px 14px;cursor:pointer;font-size:12px;margin-right:8px;}
+button:hover{background:var(--vscode-button-hoverBackground);}
+</style>
+</head><body>
+<p class="error">${escapeHtml(message)}</p>
+<p>LaTeX Forge can install everything it needs for you: the CLI, LaTeX, and a test compile — no administrator password needed.</p>
+<p><button id="setup-btn">Install everything</button><button id="refresh-btn">Refresh</button></p>
+<p>Details are in the "LaTeX Forge" output channel.</p>
+<script nonce="${nonce}">
+    const vscode = acquireVsCodeApi();
+    document.getElementById('setup-btn').addEventListener('click', () => vscode.postMessage({ type: 'setup' }));
+    document.getElementById('refresh-btn').addEventListener('click', () => vscode.postMessage({ type: 'refresh' }));
+</script>
+</body></html>`;
 }

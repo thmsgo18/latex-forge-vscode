@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
+import { ensureCliAvailable } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
 import { fetchGalleryTemplates, GalleryTemplate } from '../gallery';
 import { listTemplates } from '../templates';
@@ -34,8 +34,7 @@ export async function browseGalleryCommand(
     onTemplateInstalled?: () => void,
     onInstallAndCreate?: (templateName: string) => Promise<void>
 ): Promise<void> {
-    if (!(await isLatexForgeAvailable())) {
-        await promptInstallLatexForge();
+    if (!(await ensureCliAvailable())) {
         return;
     }
 

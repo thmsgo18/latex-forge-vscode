@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
+import { ensureCliAvailable } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
 import { RepoMode, SharingMode, Visibility, readConfig } from '../config';
 import { isGhAuthenticated, isGhCliAvailable, promptGhLogin, promptInstallGhCli } from '../githubDetection';
@@ -144,8 +144,7 @@ export async function createProjectCommand(
     outputChannel: vscode.OutputChannel,
     preselectedTemplate?: string
 ): Promise<void> {
-    if (!(await isLatexForgeAvailable())) {
-        await promptInstallLatexForge();
+    if (!(await ensureCliAvailable())) {
         return;
     }
 

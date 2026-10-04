@@ -16,6 +16,14 @@ export class QuickActionItem extends vscode.TreeItem {
     }
 }
 
+const ITEM_SETUP = new QuickActionItem(
+    'Finish Setup — install LaTeX',
+    'warning',
+    new vscode.ThemeColor('editorWarning.foreground'),
+    'latex-forge.installEverything',
+    'LaTeX Forge needs a one-time setup: the CLI and a LaTeX distribution (no administrator password needed)'
+);
+
 const ITEM_CREATE = new QuickActionItem(
     'Create Project',
     'add',
@@ -62,6 +70,15 @@ function isInLatexProject(): boolean {
 export class ProjectTreeProvider implements vscode.TreeDataProvider<QuickActionItem> {
     private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+    private setupNeeded = false;
+
+    /** Puts a "Finish Setup" entry at the top while the CLI or LaTeX is missing. */
+    setSetupNeeded(needed: boolean): void {
+        if (needed !== this.setupNeeded) {
+            this.setupNeeded = needed;
+            this._onDidChangeTreeData.fire();
+        }
+    }
 
     constructor(context: vscode.ExtensionContext) {
         // Refresh when the user opens or closes a workspace folder
@@ -85,7 +102,9 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<QuickActionI
     }
 
     getChildren(): QuickActionItem[] {
-        const items = [ITEM_CREATE, ITEM_GALLERY, ITEM_PROFILE];
+        const items = this.setupNeeded
+            ? [ITEM_SETUP, ITEM_CREATE, ITEM_GALLERY, ITEM_PROFILE]
+            : [ITEM_CREATE, ITEM_GALLERY, ITEM_PROFILE];
         if (isInLatexProject()) {
             items.push(ITEM_RENAME);
         }

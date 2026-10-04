@@ -1,60 +1,66 @@
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from './cliDetection';
-import { execLatexForge, runLatexForge } from './cliRunner';
+import { EnvironmentStatus, getEnvironmentStatus } from './environment';
+import { SetupWizard } from './setupWizard';
 
-const SETUP_PROMPTED_KEY = 'latexForge.setupPrompted';
+const DONT_ASK_KEY = 'latexForge.setupDontAsk';
+const SNOOZE_KEY = 'latexForge.setupSnoozedUntil';
+const SNOOZE_MS = 24 * 60 * 60 * 1000;
+
+/** Something that shows whether the one-time setup is still to do. */
+export interface SetupIndicator {
+    setSetupNeeded(needed: boolean): void;
+}
+
+/** Whether the CLI runs and LaTeX can compile. */
+export function isSetupComplete(status: EnvironmentStatus): boolean {
+    return status.cliAvailable && status.texReady;
+}
+
+/** Human-readable list of what the setup will install. */
+export function describeMissing(status: EnvironmentStatus): string {
+    if (!status.cliAvailable) {
+        return 'the LaTeX Forge CLI and a LaTeX distribution';
+    }
+    return 'a LaTeX distribution';
+}
 
 /**
- * On the extension's first-ever activation, checks whether the LaTeX Forge
- * CLI and a working LaTeX toolchain (a TeX distribution + latexmk) are
- * present, and if not, offers a one-click setup.
- *
- * Gated on `globalState` so this only ever runs once per machine, regardless
- * of whether the user acts on the notification.
+ * Checks the environment and updates the indicators. On activation, also
+ * offers the one-click setup while it is incomplete — at most once a day
+ * after "Later", never after "Don't Ask Again" (the status bar and the panel
+ * keep offering it either way).
  */
-export async function maybeOfferSetup(
-    context: vscode.ExtensionContext,
-    outputChannel: vscode.OutputChannel
-): Promise<void> {
-    if (context.globalState.get<boolean>(SETUP_PROMPTED_KEY)) {
-        return;
-    }
-    await context.globalState.update(SETUP_PROMPTED_KEY, true);
-
-    if (!(await isLatexForgeAvailable())) {
-        await promptInstallLatexForge();
-        return;
+export async function refreshSetupState(
+    indicators: SetupIndicator[],
+    options: { context: vscode.ExtensionContext; wizard: SetupWizard; prompt: boolean }
+): Promise<EnvironmentStatus> {
+    const status = await getEnvironmentStatus();
+    const complete = isSetupComplete(status);
+    for (const indicator of indicators) {
+        indicator.setSetupNeeded(!complete);
     }
 
-    // `latex-forge diagnose --json` exits 1 if a TeX distribution or
-    // latexmk is missing, 0 otherwise — no need to parse its output.
-    const diagnoseResult = await execLatexForge(['diagnose', '--json']);
-    if (diagnoseResult.exitCode === 0) {
-        return;
+    const state = options.context.globalState;
+    const snoozed = Date.now() < (state.get<number>(SNOOZE_KEY) ?? 0);
+    if (complete || !options.prompt || snoozed || state.get<boolean>(DONT_ASK_KEY)) {
+        return status;
     }
 
     const choice = await vscode.window.showInformationMessage(
-        'LaTeX Forge: no LaTeX distribution (with latexmk) was found. ' +
-        'Install it now? This downloads MiKTeX/TeX Live and can take several minutes.',
-        'Run Setup Now',
-        'Later'
+        `LaTeX Forge needs a one-time setup: ${describeMissing(status)} `
+        + '(about 500 MB, a few minutes, no administrator password). Set it up now?',
+        'Set Up Now',
+        'Later',
+        "Don't Ask Again"
     );
-
-    if (choice !== 'Run Setup Now') {
-        return;
-    }
-
-    outputChannel.show(true);
-    const setupResult = await runLatexForge(['setup', '--install-tex'], { outputChannel });
-
-    if (setupResult.exitCode === 0) {
-        await vscode.window.showInformationMessage(
-            'LaTeX Forge: setup completed. Restart VS Code before compiling.'
-        );
+    if (choice === 'Set Up Now') {
+        await options.wizard.run({ installExtensions: false });
+        return getEnvironmentStatus();  // the machine changed: don't return the stale state
+    } else if (choice === "Don't Ask Again") {
+        await state.update(DONT_ASK_KEY, true);
     } else {
-        await vscode.window.showWarningMessage(
-            `LaTeX Forge setup finished with exit code ${setupResult.exitCode}. ` +
-            'See the "LaTeX Forge" output channel for details.'
-        );
+        // "Later" (or dismissed): don't nag in every window — ask again tomorrow.
+        await state.update(SNOOZE_KEY, Date.now() + SNOOZE_MS);
     }
+    return status;
 }

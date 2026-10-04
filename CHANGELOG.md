@@ -4,6 +4,61 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+### Added
+
+- **One-click setup — "LaTeX Forge: Install Everything"**: installs the
+  LaTeX Forge CLI and LaTeX with a progress notification, then checks that a
+  test document compiles. Nothing to install beforehand: the CLI comes
+  through uv (downloaded into the extension's storage and verified against
+  pinned SHA-256 checksums) on a Python uv manages; LaTeX is the light
+  TinyTeX in your home folder by default (~500 MB, no administrator
+  password), or all of TeX Live, or the system distribution (run in a
+  terminal, since it needs your password). An existing distribution is
+  detected and left alone. Requires CLI 0.8.0. The command also takes
+  options, e.g. `command:latex-forge.installEverything?{"tex":"full"}`.
+- Commands that need the CLI now offer **Install automatically** when it's
+  missing, then carry on, instead of only copying a command.
+- **Missing LaTeX packages are installed for you**: when a compile —
+  including LaTeX Workshop's compile on save — reports a missing package,
+  font or bibliography style, the extension runs `latex-forge build`, which
+  installs it and recompiles. Works for projects opened as a folder or as a
+  single `.tex` file. Setting: `latexForge.autoInstallPackages`.
+- While the setup isn't done, a **finish setup** item shows in the status
+  bar and at the top of the LaTeX Forge panel.
+- "Setup Environment" offers: install everything, choose the LaTeX
+  distribution, check only, install the recommended extensions, install the
+  GitHub CLI, and repair LaTeX (reinstall TinyTeX, keeping its packages).
+- The GitHub CLI prompt can install `gh` in a terminal directly.
+- The Diagnose dashboard shows how the CLI is installed, which LaTeX
+  distribution is used and where, whether missing packages can be installed
+  automatically, and the GitHub CLI status; it offers **Install everything**
+  when something required is missing — including when the CLI itself is.
+
+### Changed
+
+- Freshly installed tools work in the current window: the CLI's folder and
+  the LaTeX distribution (TinyTeX, MacTeX, TeX Live, MiKTeX) are added to
+  VS Code's PATH — which LaTeX Workshop uses — and to new terminals. No more
+  "restart VS Code before compiling".
+- CLI upgrades use the tool that installed it (`uv tool upgrade` or
+  `pipx upgrade`) instead of always pipx.
+- The setup offer comes back (at most once a day after "Later") until the
+  environment is complete, instead of being shown once per machine.
+- Minimum CLI version raised to 0.8.0.
+
+### Fixed
+
+- The first-run check marked itself done before the CLI was installed, so
+  after installing the CLI, the offer to install LaTeX never came back.
+- On Windows, the `Path` variable could end up duplicated in the environment
+  passed to the CLI.
+- The Diagnose dashboard escapes the values reported by the CLI, and its
+  error page's style is no longer blocked by the webview's security policy.
+- `npm run lint` hung forever: typescript-eslint 7 doesn't support
+  TypeScript 6 (bumped to 8). `npm test` failed against current VS Code,
+  whose macOS binary is no longer named "Electron" (@vscode/test-electron
+  bumped to 3.1).
+
 ## [1.2.0] - 2026-07-31
 
 ### Added

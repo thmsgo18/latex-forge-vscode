@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
+import { ensureCliAvailable } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
 import { listTemplates } from '../templates';
 
@@ -35,8 +35,7 @@ export async function removeTemplateCommand(
     onRemoved?: () => void,
     templateName?: string
 ): Promise<void> {
-    if (!(await isLatexForgeAvailable())) {
-        await promptInstallLatexForge();
+    if (!(await ensureCliAvailable())) {
         return;
     }
 

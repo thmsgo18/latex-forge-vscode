@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { browseGalleryCommand } from './commands/browseGallery';
 import { diagnoseCommand } from './commands/diagnose';
@@ -11,9 +12,14 @@ import { removeTemplateCommand } from './commands/removeTemplate';
 import { renameProjectCommand } from './commands/renameProject';
 import { setupEnvironmentCommand } from './commands/setupEnvironment';
 import { updateTemplatesCommand } from './commands/updateTemplates';
+import { setCliInstaller } from './cliDetection';
+import { applyToolPaths, setPrivateBinDir } from './cliEnv';
 import { checkForCliUpdate, checkMinimumCliVersion, setUpdateAppliedCallback, setUpdateAvailableCallback } from './cliUpdater';
-import { maybeOfferSetup } from './firstRun';
+import { EnvironmentStatus } from './environment';
+import { refreshSetupState } from './firstRun';
+import { MissingPackageWatcher } from './missingPackages';
 import { ProjectTreeProvider } from './projectTreeProvider';
+import { SetupOptions, SetupWizard } from './setupWizard';
 import { StatusBarManager } from './statusBar';
 import { TemplateInfo } from './templates';
 import { TemplatesTreeProvider } from './templatesTreeProvider';
@@ -21,6 +27,12 @@ import { TemplatesTreeProvider } from './templatesTreeProvider';
 export function activate(context: vscode.ExtensionContext): void {
     const outputChannel = vscode.window.createOutputChannel('LaTeX Forge');
     context.subscriptions.push(outputChannel);
+
+    // Tools installed by the setup (the CLI in ~/.local/bin, TinyTeX, uv in
+    // our storage) must work in this window right away: no restart needed.
+    setPrivateBinDir(path.join(context.globalStorageUri.fsPath, 'bin'));
+    context.environmentVariableCollection.description = 'Adds LaTeX Forge and its LaTeX distribution to PATH';
+    applyToolPaths(context.environmentVariableCollection);
 
     // Status bar — must be created before checkForCliUpdate runs so the
     // update callback is registered in time.
@@ -31,6 +43,18 @@ export function activate(context: vscode.ExtensionContext): void {
     const projectProvider = new ProjectTreeProvider(context);
     const templatesProvider = new TemplatesTreeProvider();
     const refreshTemplates = () => templatesProvider.refresh();
+
+    // Latest known state of the machine (CLI + LaTeX), refreshed after setup.
+    let environment: EnvironmentStatus | undefined;
+    const indicators = [statusBar, projectProvider];
+    const wizard: SetupWizard = new SetupWizard(context, outputChannel, () => {
+        applyToolPaths(context.environmentVariableCollection);
+        void refreshSetupState(indicators, { context, wizard, prompt: false }).then((status) => {
+            environment = status;
+            refreshTemplates();
+        });
+    });
+    setCliInstaller(() => wizard.installCliOnly());
 
     // Callback used by "Install & Create" in the gallery: runs createProject
     // with the just-installed template pre-selected, skipping the picker.
@@ -52,7 +76,12 @@ export function activate(context: vscode.ExtensionContext): void {
             return renameProjectCommand(outputChannel, root);
         }),
         vscode.commands.registerCommand('latex-forge.setupEnvironment', () =>
-            setupEnvironmentCommand(outputChannel)
+            setupEnvironmentCommand(outputChannel, wizard)
+        ),
+        // Also callable with options, e.g. from a command link:
+        // command:latex-forge.installEverything?{"tex":"full"}
+        vscode.commands.registerCommand('latex-forge.installEverything', (options?: SetupOptions) =>
+            wizard.run({ installExtensions: true, ...options })
         ),
         vscode.commands.registerCommand('latex-forge.listTemplates', () =>
             listTemplatesCommand(outputChannel)
@@ -86,6 +115,8 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.registerUriHandler(
             createInstallUriHandler(outputChannel, refreshTemplates, onInstallAndCreate)
         ),
+
+        new MissingPackageWatcher(outputChannel, () => environment),
     );
 
     // Once per session: warn if the CLI is too old; otherwise check PyPI for a
@@ -97,8 +128,11 @@ export function activate(context: vscode.ExtensionContext): void {
         }
     });
 
-    // On first activation ever, offer to install the CLI/LaTeX toolchain.
-    void maybeOfferSetup(context, outputChannel);
+    // While the CLI or LaTeX is missing, offer the one-click setup (and keep
+    // the status bar / panel pointing at it).
+    void refreshSetupState(indicators, { context, wizard, prompt: true }).then((status) => {
+        environment = status;
+    });
 }
 
 export function deactivate(): void {

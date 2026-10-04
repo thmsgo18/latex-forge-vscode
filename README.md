@@ -17,7 +17,7 @@ This extension is the visual companion of the [LaTeX Forge CLI](https://github.c
 ## Getting started
 
 1. Install this extension (click **Install** on the banner above).
-2. Install the CLI it drives: `pipx install latex-forge`. If the extension can't find it, it offers to copy this command or open the [PyPI page](https://pypi.org/project/latex-forge/).
+2. Click **Set Up Now** when it offers the one-time setup (or run **LaTeX Forge: Install Everything**). It installs the LaTeX Forge CLI and LaTeX — about 500 MB, a few minutes, **no Python, terminal or administrator password needed** — and checks that a test document compiles. No restart needed.
 3. Open the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) and run **LaTeX Forge: Create Project**.
 
 That's it: pick a template, enter a name, choose a folder, and open your new project.
@@ -67,14 +67,24 @@ A form inside VS Code to edit your LaTeX Forge profile (name, email, university,
 
 Reads and writes `default_template` and `default_output_dir` in `~/.latex-forge.toml` through a simple menu (no manual TOML editing).
 
+### One-click setup
+
+- **Install Everything**: installs whatever is missing, with a progress notification:
+  - the **LaTeX Forge CLI**, through [uv](https://docs.astral.sh/uv/) (downloaded and checksum-verified by the extension), on a Python uv manages — nothing to install beforehand, and a system Python upgrade can't break it;
+  - **LaTeX**: you choose **Light** (TinyTeX in your home folder, ~500 MB, the default), **Full** (all of TeX Live, ~2 GB) or **System** (MacTeX / MiKTeX / TeX Live through your package manager, run in a terminal since it needs your password). A distribution you already have is detected and left alone;
+  - the recommended VS Code extensions (LaTeX Workshop, LTeX+, spell checkers, Live Share);
+  - then a test compile. New tools are added to VS Code's PATH (and new terminals') immediately: no restart.
+- Until the setup is done, a **finish setup** item shows in the status bar and the LaTeX Forge panel.
+- **Missing packages, installed for you**: with the light distribution, when a compile (LaTeX Workshop's compile on save included) reports a missing package, font or bibliography style, the extension installs it and recompiles. Turn it off with `latexForge.autoInstallPackages`.
+
 ### Setup Environment & Diagnose
 
-- **Setup Environment**: runs `latex-forge setup` with your choice of `--check-only`, `--skip-extensions`, `--install-tex`; installs the LaTeX toolchain for your OS.
-- **Diagnose Environment**: runs `latex-forge diagnose` and presents the health check (TeX Live, latexmk, profile, defaults) with actionable fixes.
+- **Setup Environment**: everything above, plus finer options — check only, choose the LaTeX distribution, install only the recommended extensions, install the GitHub CLI, or repair LaTeX (reinstall TinyTeX after a new TeX Live year, keeping your packages).
+- **Diagnose Environment**: runs `latex-forge diagnose` and presents the health check (the CLI and how it's installed, the LaTeX distribution, latexmk, biber, GitHub CLI, profile, defaults) with actionable fixes and an **Install everything** button.
 
 ### CLI updates
 
-The extension checks once per session whether a newer CLI version is on PyPI and offers a one-click `pipx upgrade latex-forge` (also available manually via **Check for CLI Update**). A status bar item signals when an update is available.
+The extension checks once per session whether a newer CLI version is on PyPI and offers a one-click upgrade with the tool that installed it (`uv tool upgrade` or `pipx upgrade`; also available manually via **Check for CLI Update**). A status bar item signals when an update is available.
 
 ## Commands
 
@@ -89,26 +99,29 @@ The extension checks once per session whether a newer CLI version is on PyPI and
 | `LaTeX Forge: Rename Project` / `Rename Current Project` | Rename folder + main file consistently |
 | `LaTeX Forge: Edit Profile` | Auto-fill profile (name, email, university…) |
 | `LaTeX Forge: Configure Defaults` | Default template & output directory |
-| `LaTeX Forge: Setup Environment` | Install / check the LaTeX toolchain |
+| `LaTeX Forge: Install Everything (CLI + LaTeX)` | One-click setup of the CLI, LaTeX and the recommended extensions |
+| `LaTeX Forge: Setup Environment` | Setup options: check only, choose the distribution, GitHub CLI, repair |
 | `LaTeX Forge: Diagnose Environment` | Environment health check |
 | `LaTeX Forge: Check for CLI Update` | Compare installed CLI with PyPI |
 | `LaTeX Forge: Refresh Templates` | Reload the Templates view |
 
 ## Requirements
 
-- The **latex-forge CLI** (`pipx install latex-forge`): the extension is a thin wrapper around it and duplicates none of its logic.
-- A **LaTeX distribution** for compiling (the extension can install it for you via **Setup Environment**).
+- The **latex-forge CLI**: the extension is a thin wrapper around it and duplicates none of its logic. **Install Everything** installs it for you; if you prefer, `uv tool install latex-forge` or `pipx install latex-forge` work too.
+- A **LaTeX distribution** for compiling: **Install Everything** installs one (no administrator password), or uses the one you have.
 - [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) is recommended for the live PDF preview; generated projects are pre-configured for it.
 
-**Privacy note:** the gallery panel is the only feature that talks to the network (it fetches `gallery.json` and preview images from `raw.githubusercontent.com`, plus the PyPI version check). Everything else only talks to the local CLI.
+**Privacy note:** the network is only used by the gallery panel (it fetches `gallery.json` and preview images from `raw.githubusercontent.com`), the PyPI version check, and the setup, which downloads uv and TinyTeX from GitHub releases, latex-forge and a Python from PyPI / python-build-standalone (through uv), and LaTeX packages from CTAN mirrors. Everything else only talks to the local CLI.
 
 ## Extension Settings
 
-This extension does not contribute VS Code settings. Defaults that influence `latex-forge create` live in `~/.latex-forge.toml` and are managed with **LaTeX Forge: Configure Defaults**.
+- `latexForge.autoInstallPackages` (default `true`): when a compile reports a missing LaTeX package, font or bibliography style, install it and recompile — only with a distribution that allows it without administrator rights, such as the light TinyTeX.
+
+Defaults that influence `latex-forge create` live in `~/.latex-forge.toml` and are managed with **LaTeX Forge: Configure Defaults**.
 
 ## Known Limitations
 
-- The extension requires the CLI to be installed separately (it will guide you if it's missing).
+- The one-click setup needs an internet connection. With a **System** distribution (or a system-wide TeX Live), missing packages can't be installed automatically: the extension shows the command to run.
 
 ## Release Notes
 

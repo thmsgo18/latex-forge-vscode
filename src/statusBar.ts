@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 export class StatusBarManager {
     private readonly item: vscode.StatusBarItem;
     private updateAvailable: string | undefined;
+    private setupNeeded = false;
 
     constructor(context: vscode.ExtensionContext) {
         this.item = vscode.window.createStatusBarItem(
@@ -34,7 +35,23 @@ export class StatusBarManager {
         this.refresh();
     }
 
+    /** Shows a "setup needed" warning (clicking it runs the setup) while LaTeX or the CLI is missing. */
+    setSetupNeeded(needed: boolean): void {
+        this.setupNeeded = needed;
+        this.refresh();
+    }
+
     private refresh(): void {
+        if (this.setupNeeded) {
+            this.item.text = '$(warning) LaTeX Forge: finish setup';
+            this.item.tooltip = 'LaTeX Forge needs a one-time setup (the CLI and/or LaTeX). Click to install everything.';
+            this.item.command = 'latex-forge.installEverything';
+            this.item.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+            this.item.show();
+            return;
+        }
+        this.item.command = 'workbench.view.extension.latexForge';
+
         const label = this.projectLabel();
         const hasUpdate = !!this.updateAvailable;
 

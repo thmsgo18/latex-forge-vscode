@@ -42,6 +42,7 @@ suite('LaTeX Forge extension', () => {
             'latex-forge.renameProject',
             'latex-forge.renameCurrentProject',
             'latex-forge.setupEnvironment',
+            'latex-forge.installEverything',
             'latex-forge.listTemplates',
             'latex-forge.installTemplate',
             'latex-forge.browseGallery',

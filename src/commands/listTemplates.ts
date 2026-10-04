@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
+import { ensureCliAvailable } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
 
 export async function listTemplatesCommand(outputChannel: vscode.OutputChannel): Promise<void> {
-    if (!(await isLatexForgeAvailable())) {
-        await promptInstallLatexForge();
+    if (!(await ensureCliAvailable())) {
         return;
     }
 

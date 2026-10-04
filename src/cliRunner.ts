@@ -9,15 +9,21 @@ export interface RunResult {
     stderr: string;
 }
 
+export interface RunOptions {
+    cwd?: string;
+    outputChannel: vscode.OutputChannel;
+    /** Called with each complete output line (stdout and stderr), e.g. to drive progress. */
+    onLine?: (line: string) => void;
+    /** Kills the process when cancellation is requested. */
+    token?: vscode.CancellationToken;
+}
+
 /**
  * Runs `latex-forge <args>`, streaming combined output to the given output
  * channel as it arrives, and resolves with the exit code and captured output.
  */
-export function runLatexForge(
-    args: string[],
-    options: { cwd?: string; outputChannel: vscode.OutputChannel }
-): Promise<RunResult> {
-    const { cwd, outputChannel } = options;
+export function runLatexForge(args: string[], options: RunOptions): Promise<RunResult> {
+    const { cwd, outputChannel, onLine, token } = options;
 
     return new Promise((resolve, reject) => {
         outputChannel.appendLine(`$ ${LATEX_FORGE_BINARY} ${args.join(' ')}`);
@@ -25,22 +31,47 @@ export function runLatexForge(
         const child = spawn(LATEX_FORGE_BINARY, args, { cwd, env: getCliEnv() });
         let stdout = '';
         let stderr = '';
+        let pending = '';
+
+        const forwardLines = (text: string) => {
+            if (!onLine) {
+                return;
+            }
+            pending += text;
+            const lines = pending.split(/\r?\n/);
+            pending = lines.pop() ?? '';
+            lines.forEach(onLine);
+        };
 
         child.stdout.on('data', (chunk: Buffer) => {
             const text = chunk.toString();
             stdout += text;
             outputChannel.append(text);
+            forwardLines(text);
         });
 
         child.stderr.on('data', (chunk: Buffer) => {
             const text = chunk.toString();
             stderr += text;
             outputChannel.append(text);
+            forwardLines(text);
         });
 
-        child.on('error', (error) => reject(error));
+        const cancellation = token?.onCancellationRequested(() => {
+            outputChannel.appendLine('Cancelled.');
+            child.kill();
+        });
+
+        child.on('error', (error) => {
+            cancellation?.dispose();
+            reject(error);
+        });
 
         child.on('close', (exitCode) => {
+            cancellation?.dispose();
+            if (pending && onLine) {
+                onLine(pending);
+            }
             resolve({ exitCode: exitCode ?? -1, stdout, stderr });
         });
     });

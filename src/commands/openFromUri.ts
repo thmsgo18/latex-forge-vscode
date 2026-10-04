@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
+import { ensureCliAvailable } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
 
 /**
@@ -28,8 +28,7 @@ export function createInstallUriHandler(
                 return;
             }
 
-            if (!(await isLatexForgeAvailable())) {
-                await promptInstallLatexForge();
+            if (!(await ensureCliAvailable())) {
                 return;
             }
 

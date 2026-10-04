@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isLatexForgeAvailable, promptInstallLatexForge } from '../cliDetection';
+import { ensureCliAvailable } from '../cliDetection';
 import { runLatexForge } from '../cliRunner';
 
 async function askSource(): Promise<string | undefined> {
@@ -27,8 +27,7 @@ export async function installTemplateCommand(
     outputChannel: vscode.OutputChannel,
     onInstalled?: () => void
 ): Promise<void> {
-    if (!(await isLatexForgeAvailable())) {
-        await promptInstallLatexForge();
+    if (!(await ensureCliAvailable())) {
         return;
     }
 

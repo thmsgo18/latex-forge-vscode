@@ -57,6 +57,11 @@
         "title": "LaTeX Forge: Setup Environment"
       },
       {
+        "command": "latex-forge.installEverything",
+        "title": "LaTeX Forge: Install Everything (CLI + LaTeX)",
+        "icon": "$(rocket)"
+      },
+      {
         "command": "latex-forge.listTemplates",
         "title": "LaTeX Forge: List Templates"
       },
@@ -113,12 +118,13 @@
         "steps": [
           {
             "id": "installCli",
-            "title": "Install the LaTeX Forge CLI",
-            "description": "Check your machine and install the LaTeX Forge CLI, LaTeX itself, and recommended VS Code extensions.\n[Run Setup](command:latex-forge.setupEnvironment)",
+            "title": "Install LaTeX Forge and LaTeX",
+            "description": "One click installs the LaTeX Forge CLI and a LaTeX distribution (about 500 MB, a few minutes, no administrator password), then checks that a test document compiles.\n[Install Everything](command:latex-forge.installEverything)",
             "media": {
               "markdown": "walkthroughs/install-cli.md"
             },
             "completionEvents": [
+              "onCommand:latex-forge.installEverything",
               "onCommand:latex-forge.setupEnvironment"
             ]
           },
@@ -215,6 +221,16 @@
           "group": "inline"
         }
       ]
+    },
+    "configuration": {
+      "title": "LaTeX Forge",
+      "properties": {
+        "latexForge.autoInstallPackages": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "When a compile reports a missing LaTeX package, font or bibliography style, install it and recompile automatically. Only with a distribution that allows it without administrator rights — such as the light TinyTeX installed by **LaTeX Forge: Install Everything**."
+        }
+      }
     }
   },
   "scripts": {
@@ -230,9 +246,9 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "@vscode/test-electron": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.71.0",
+    "@typescript-eslint/parser": "^8.71.0",
+    "@vscode/test-electron": "^3.1.0",
     "esbuild": "^0.28.1",
     "eslint": "^8.56.0",
     "glob": "^13.0.6",

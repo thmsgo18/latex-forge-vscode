@@ -2,6 +2,9 @@ import { execFile, spawn } from 'child_process';
 import * as vscode from 'vscode';
 import { LATEX_FORGE_BINARY } from './cliDetection';
 import { getCliEnv } from './cliEnv';
+import { execLatexForge } from './cliRunner';
+import { parseDiagnose } from './environment';
+import { upgradeCliArgs } from './uvBootstrap';
 
 const PYPI_METADATA_URL = 'https://pypi.org/pypi/latex-forge/json';
 const PIPX_BINARY = 'pipx';
@@ -33,9 +36,11 @@ export function setUpdateAppliedCallback(cb: () => void): void {
 
 // Minimum CLI version this extension is built against. The extension relies on
 // commands and JSON output formats (template list/update --json, diagnose
-// --json, the gallery install URLs) finalised in this release; against an older
-// CLI some features fail in confusing ways, so we warn the user up front.
-export const MIN_CLI_VERSION = '0.5.0';
+// --json, the gallery install URLs) and on the no-admin LaTeX install
+// (`setup --tex`, `diagnose` reporting the distribution and install method)
+// finalised in this release; against an older CLI some features fail in
+// confusing ways, so we warn the user up front.
+export const MIN_CLI_VERSION = '0.8.0';
 
 /** Parses "latex-forge X.Y.Z …" → "X.Y.Z", or null when the format is unexpected. */
 export function parseVersionString(output: string): string | null {
@@ -100,15 +105,51 @@ async function getLatestPyPiVersion(): Promise<string | null> {
 // Upgrade runner
 // ---------------------------------------------------------------------------
 
-/**
- * Runs `pipx upgrade latex-forge`, streams output to the channel, and
- * resolves with whether the command exited cleanly.
- */
-function runPipxUpgrade(outputChannel: vscode.OutputChannel): Promise<boolean> {
-    return new Promise((resolve) => {
-        outputChannel.appendLine('$ pipx upgrade latex-forge');
+export type InstallMethod = 'uv' | 'pipx' | 'editable' | 'venv' | 'pip' | 'unknown';
 
-        const child = spawn(PIPX_BINARY, ['upgrade', 'latex-forge'], { env: getCliEnv() });
+/** The upgrade command for a given install method, or undefined if we can't upgrade it. */
+export function upgradeCommandFor(method: InstallMethod): { command: string; args: string[] } | undefined {
+    switch (method) {
+        case 'uv':
+            return { command: 'uv', args: upgradeCliArgs() };
+        case 'pipx':
+            return { command: PIPX_BINARY, args: ['upgrade', 'latex-forge'] };
+        default:
+            return undefined;
+    }
+}
+
+/** Asks the CLI how it was installed (CLI 0.8+), falling back to what's on the machine. */
+async function detectInstallMethod(): Promise<InstallMethod> {
+    const result = await execLatexForge(['diagnose', '--json']);
+    const method = parseDiagnose(result.stdout)?.cli_install?.method;
+    if (method) {
+        return method;
+    }
+    // Older CLIs don't say: before uv support, pipx was the documented way.
+    const pipxList = await new Promise<string>((resolve) => {
+        execFile(PIPX_BINARY, ['list', '--short'], { env: getCliEnv() }, (error, stdout) => resolve(error ? '' : stdout));
+    });
+    return /^latex-forge\b/m.test(pipxList) ? 'pipx' : 'uv';
+}
+
+/**
+ * Upgrades the CLI with the tool that installed it (uv or pipx), streams
+ * output to the channel, and resolves with whether it succeeded.
+ */
+function runCliUpgrade(outputChannel: vscode.OutputChannel): Promise<boolean> {
+    return detectInstallMethod().then((method) => new Promise((resolve) => {
+        const upgrade = upgradeCommandFor(method);
+        if (!upgrade) {
+            outputChannel.appendLine(
+                `latex-forge was installed with ${method}: upgrade it the same way ` +
+                '(e.g. "pip install --upgrade latex-forge").'
+            );
+            resolve(false);
+            return;
+        }
+        outputChannel.appendLine(`$ ${upgrade.command} ${upgrade.args.join(' ')}`);
+        const child = spawn(upgrade.command, upgrade.args, { env: getCliEnv() });
 
         child.stdout.on('data', (chunk: Buffer) => outputChannel.append(chunk.toString()));
         child.stderr.on('data', (chunk: Buffer) => outputChannel.append(chunk.toString()));
@@ -119,12 +160,31 @@ function runPipxUpgrade(outputChannel: vscode.OutputChannel): Promise<boolean> {
         });
 
         child.on('close', (code) => resolve(code === 0));
-    });
+    }));
 }
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
+
+/**
+ * Makes sure the installed CLI is at least {@link MIN_CLI_VERSION},
+ * upgrading it (with uv or pipx) when it's older — the setup relies on
+ * options older CLIs don't have. Resolves with whether it's recent enough.
+ */
+export async function ensureMinimumCliVersion(outputChannel: vscode.OutputChannel): Promise<boolean> {
+    const installed = await getInstalledVersion();
+    if (!installed || !isBelowMinimum(installed)) {
+        return true;
+    }
+    outputChannel.appendLine(`LaTeX Forge CLI ${installed} is older than ${MIN_CLI_VERSION}: upgrading it.`);
+    const success = await runCliUpgrade(outputChannel);
+    if (success) {
+        _onUpdateApplied?.();
+    }
+    const after = await getInstalledVersion();
+    return !!after && !isBelowMinimum(after);
+}
 
 /**
  * Warns once if the installed CLI is older than {@link MIN_CLI_VERSION}, and
@@ -152,7 +212,7 @@ export async function checkMinimumCliVersion(
 
     if (choice === 'Update now') {
         outputChannel.show(true);
-        const success = await runPipxUpgrade(outputChannel);
+        const success = await runCliUpgrade(outputChannel);
         if (success) {
             _onUpdateApplied?.();
             await vscode.window.showInformationMessage('LaTeX Forge CLI updated successfully.');
@@ -168,7 +228,7 @@ export async function checkMinimumCliVersion(
 /**
  * Compares the installed CLI version against the latest version on PyPI.
  * If an update is available, shows a notification offering to upgrade via
- * `pipx upgrade latex-forge`.  Resolves immediately — never throws.
+ * the tool that installed it (uv or pipx).  Resolves immediately — never throws.
  *
  * @param outputChannel The shared output channel to stream upgrade output to.
  * @param force         When true, bypass the once-per-session guard (useful
@@ -223,7 +283,7 @@ export async function checkForCliUpdate(
     }
 
     outputChannel.show(true);
-    const success = await runPipxUpgrade(outputChannel);
+    const success = await runCliUpgrade(outputChannel);
 
     if (success) {
         _onUpdateApplied?.();
