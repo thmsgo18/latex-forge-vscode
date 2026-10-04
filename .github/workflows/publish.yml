@@ -1,12 +1,42 @@
 name: Publish to VS Code Marketplace
 
+# Push a vX.Y.Z tag to release. Nothing is published unless the tag matches
+# package.json, the changelog documents the version, and the whole CI suite —
+# unit tests on every OS and the end-to-end install test — passes on the
+# tagged commit.
+
 on:
   push:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: read
+
 jobs:
+  release-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Tag matches package.json and the changelog documents it
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          manifest="$(node -p "require('./package.json').version")"
+          if [ "$version" != "$manifest" ]; then
+            echo "::error::tag $GITHUB_REF_NAME but package.json says $manifest"
+            exit 1
+          fi
+          if ! grep -q "^## \[$version\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## [$version]' section"
+            exit 1
+          fi
+
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   publish:
+    needs: [release-checks, ci]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -29,6 +59,9 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Create GitHub release
-        run: gh release create "$GITHUB_REF_NAME" *.vsix --title "$GITHUB_REF_NAME" --generate-notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '$0 ~ "^## \\[" v "\\]" {on=1; next} on && /^## \[/ {exit} on {print}' CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" *.vsix --title "$GITHUB_REF_NAME" --notes-file notes.md
         env:
           GH_TOKEN: ${{ github.token }}

@@ -5,13 +5,19 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Lets publish.yml run the whole suite before releasing.
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v6
@@ -27,6 +33,46 @@ jobs:
       - run: npm run compile
 
       - name: Run tests
+        if: runner.os == 'Linux'
         uses: coactions/setup-xvfb@v1
         with:
           run: npm test
+
+      - name: Run tests
+        if: runner.os != 'Linux'
+        run: npm test
+
+      - name: Package the extension
+        if: runner.os == 'Linux'
+        run: npx @vscode/vsce package
+
+  # The real user journey on a machine with no LaTeX and no latex-forge:
+  # "Install Everything" downloads uv, installs the CLI from PyPI and the
+  # light TinyTeX, then LaTeX Workshop compiles on save and a missing package
+  # gets installed automatically.
+  e2e:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: End-to-end test
+        if: runner.os == 'Linux'
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run test:e2e
+
+      - name: End-to-end test
+        if: runner.os != 'Linux'
+        run: npm run test:e2e

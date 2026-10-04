@@ -4,6 +4,8 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-04
+
 ### Added
 
 - **One-click setup — "LaTeX Forge: Install Everything"**: installs the
@@ -54,6 +56,9 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   passed to the CLI.
 - The Diagnose dashboard escapes the values reported by the CLI, and its
   error page's style is no longer blocked by the webview's security policy.
+- Tests now run on Linux, macOS and Windows, plus an end-to-end test of the
+  whole journey on a fresh machine (`npm run test:e2e`); releases are only
+  published when they pass and the tag matches `package.json`.
 - `npm run lint` hung forever: typescript-eslint 7 doesn't support
   TypeScript 6 (bumped to 8). `npm test` failed against current VS Code,
   whose macOS binary is no longer named "Electron" (@vscode/test-electron

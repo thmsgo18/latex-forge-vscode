@@ -18,7 +18,7 @@ cd latex-forge-vscode
 npm install
 ```
 
-Requires Node.js 20+. For testing commands end to end, also install the [latex-forge CLI](https://github.com/thmsgo18/latex-forge): `pipx install latex-forge`.
+Requires Node.js 20+. To try commands by hand, install the [latex-forge CLI](https://github.com/thmsgo18/latex-forge) (`uv tool install latex-forge` or `pipx install latex-forge`), or run **LaTeX Forge: Install Everything** in the Extension Development Host.
 
 ## Running the extension
 
@@ -31,9 +31,27 @@ npm run compile   # bundle with esbuild
 npm run watch     # rebuild on every change
 npm run lint      # eslint
 npm test          # compile, lint, and run the test suite (uses xvfb on Linux)
+npm run test:e2e  # the whole journey on a simulated fresh machine (macOS/Linux)
 ```
 
-All of these run in CI; make sure `npm test` passes before opening a pull request.
+`npm test` runs in CI on Linux, macOS and Windows; make sure it passes before
+opening a pull request. `npm run test:e2e` starts VS Code with a throwaway
+HOME and no TeX on PATH, runs **Install Everything** (uv, the CLI from PyPI,
+the light TinyTeX), then checks that LaTeX Workshop compiles on save and that
+a missing package gets installed automatically. It downloads a few hundred MB
+and never touches your own setup; CI runs it on Linux and macOS.
+
+## Releasing
+
+1. `npm version X.Y.Z --no-git-tag-version`, rename `## [Unreleased]` in
+   `CHANGELOG.md` to `## [X.Y.Z] - YYYY-MM-DD`, commit.
+2. `git tag vX.Y.Z && git push && git push --tags`.
+
+The publish workflow refuses to release unless the tag matches
+`package.json`, the changelog documents the version, and the whole CI suite
+(end-to-end test included) passes on the tagged commit. It then publishes to
+the Marketplace and attaches the `.vsix` to a GitHub release. Release the CLI
+first when the extension relies on a new CLI version (`MIN_CLI_VERSION`).
 
 ## Project structure
 
