@@ -4,3 +4,4 @@ node_modules/
 .claude/
 *.vsix
 .DS_Store
+.e2e/

@@ -41,7 +41,11 @@ async function main(): Promise<void> {
         return;
     }
 
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lfe2e-'));
+    // LATEX_FORGE_E2E_ROOT keeps everything (VS Code logs included) for CI
+    // to upload; by default a temporary folder is used and removed.
+    const keep = process.env.LATEX_FORGE_E2E_ROOT;
+    const root = keep ?? fs.mkdtempSync(path.join(os.tmpdir(), 'lfe2e-'));
+    fs.mkdirSync(root, { recursive: true });
     const home = path.join(root, 'home');
     const project = path.join(root, 'e2e');
     fs.mkdirSync(home);
@@ -105,7 +109,9 @@ async function main(): Promise<void> {
         console.error(err);
         process.exit(1);
     } finally {
-        fs.rmSync(root, { recursive: true, force: true });
+        if (!keep) {
+            fs.rmSync(root, { recursive: true, force: true });
+        }
     }
 }
 
