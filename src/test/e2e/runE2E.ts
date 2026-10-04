@@ -51,6 +51,20 @@ async function main(): Promise<void> {
     // Note: no AGENTS.md in the folder — recent VS Code builds never start the
     // extension tests when the opened folder contains one.
 
+    // A quiet test instance: no AI features, extension updates or telemetry
+    // competing with the test for the network and the window.
+    const userData = path.join(root, 'ud');
+    fs.mkdirSync(path.join(userData, 'User'), { recursive: true });
+    fs.writeFileSync(path.join(userData, 'User', 'settings.json'), JSON.stringify({
+        'chat.disableAIFeatures': true,
+        'chat.agent.enabled': false,
+        'extensions.autoCheckUpdates': false,
+        'extensions.autoUpdate': false,
+        'update.mode': 'none',
+        'telemetry.telemetryLevel': 'off',
+        'workbench.startupEditor': 'none'
+    }, null, 2));
+
     const vscodeExecutablePath = await downloadAndUnzipVSCode('stable');
     const [cliPath, ...cliArgs] = resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
     cp.spawnSync(cliPath, [...cliArgs, '--install-extension', 'James-Yu.latex-workshop'], {
@@ -64,7 +78,10 @@ async function main(): Promise<void> {
         PATH: '/usr/bin:/bin:/usr/sbin:/sbin',
         // Also hide TeX distributions installed in their usual places.
         LATEX_FORGE_TEX_DIRS: '/nonexistent-tex',
-        LATEX_FORGE_E2E_PROJECT: project
+        LATEX_FORGE_E2E_PROJECT: project,
+        // Skip resolving the login shell's environment (which would bring the
+        // real PATH back on macOS, and can stall a fresh test instance).
+        VSCODE_CLI: '1'
     };
 
     try {
@@ -74,7 +91,14 @@ async function main(): Promise<void> {
             extensionTestsPath: path.resolve(__dirname, './suite/index'),
             extensionTestsEnv: env,
             // Short user-data dir: VS Code's IPC socket path must stay under 104 chars.
-            launchArgs: [project, `--user-data-dir=${path.join(root, 'ud')}`]
+            launchArgs: [
+                project,
+                `--user-data-dir=${userData}`,
+                '--disable-extension=GitHub.copilot-chat',
+                // A fresh profile would otherwise ask the macOS keychain for
+                // its encryption key: an invisible system prompt that blocks.
+                '--password-store=basic'
+            ]
         });
     } catch (err) {
         console.error('End-to-end test failed');
