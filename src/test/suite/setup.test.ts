@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import * as http from 'http';
 import * as os from 'os';
 import * as path from 'path';
 import { mergePath, tinytexRoot } from '../../cliEnv';
@@ -11,6 +12,7 @@ import { installCommandForPlatform } from '../../githubDetection';
 import { findMissingInLog, isBuildableProject } from '../../missingPackages';
 import { ProgressParser, RECOMMENDED_EXTENSIONS } from '../../setupWizard';
 import {
+    downloadFile,
     findExecutable,
     installCliArgs,
     sha256File,
@@ -189,5 +191,58 @@ suite('Diagnose data', () => {
         assert.strictEqual(installCommandForPlatform('darwin'), 'brew install gh');
         assert.strictEqual(installCommandForPlatform('win32'), 'winget install -e --id GitHub.cli');
         assert.match(installCommandForPlatform('linux'), /^sudo apt-get install gh/);
+    });
+});
+
+
+suite('Downloads', () => {
+    function serve(handler: http.RequestListener): Promise<{ url: string; close: () => void }> {
+        return new Promise((resolve) => {
+            const server = http.createServer(handler).listen(0, '127.0.0.1', () => {
+                const { port } = server.address() as { port: number };
+                resolve({ url: `http://127.0.0.1:${port}/file`, close: () => server.close() });
+            });
+        });
+    }
+
+    test('downloads a file and reports progress', async () => {
+        const body = Buffer.alloc(200_000, 7);
+        const server = await serve((_req, res) => {
+            res.writeHead(200, { 'content-length': String(body.length) });
+            res.end(body);
+        });
+        const dest = path.join(tempDir(), 'out');
+        const lines: string[] = [];
+        try {
+            await downloadFile(server.url, dest, (line) => lines.push(line), 5000);
+        } finally {
+            server.close();
+        }
+        assert.strictEqual(fs.readFileSync(dest).length, body.length);
+        assert.ok(lines.some((line) => line.includes('100%')));
+    });
+
+    test('gives up on a stalled download and retries with curl', async function () {
+        this.timeout(20_000);
+        const body = Buffer.alloc(50_000, 3);
+        const server = await serve((req, res) => {
+            res.writeHead(200, { 'content-length': String(body.length) });
+            if ((req.headers['user-agent'] ?? '').startsWith('curl/')) {
+                res.end(body);
+            } else {
+                res.write(body.subarray(0, 10));  // fetch: a few bytes, then silence
+            }
+        });
+        const dest = path.join(tempDir(), 'out');
+        const lines: string[] = [];
+        const started = Date.now();
+        try {
+            await downloadFile(server.url, dest, (line) => lines.push(line), 500);
+        } finally {
+            server.close();
+        }
+        assert.ok(lines.some((line) => line.includes('retrying with curl')), JSON.stringify(lines));
+        assert.strictEqual(fs.readFileSync(dest).length, body.length);
+        assert.ok(Date.now() - started < 15_000);
     });
 });

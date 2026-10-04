@@ -84,14 +84,45 @@ export async function sha256File(file: string): Promise<string> {
     return hash.digest('hex');
 }
 
+// Give up on a download that can't connect, or that stops receiving data,
+// after this long — then retry with curl. Without it a stalled connection
+// (seen on some CI networks) would hang the setup forever.
+export const DOWNLOAD_STALL_MS = 30_000;
+
 /**
  * Downloads `url` to `dest`, reporting progress every 10%. Uses Node's fetch,
  * falling back to curl (present on macOS, Windows 10+ and most Linux) when
- * fetch fails — e.g. behind a proxy only the system tools know about.
+ * fetch fails or stalls — e.g. behind a proxy only the system tools know about.
  */
-export async function downloadFile(url: string, dest: string, report?: Reporter): Promise<void> {
+export async function downloadFile(
+    url: string,
+    dest: string,
+    report?: Reporter,
+    stallMs: number = DOWNLOAD_STALL_MS
+): Promise<void> {
     try {
-        const response = await fetch(url, { redirect: 'follow' });
+        await fetchToFile(url, dest, report, stallMs);
+    } catch (error) {
+        report?.(`    download stalled or failed (${(error as Error).message}); retrying with curl`);
+        const code = await runProcess('curl', [
+            '-fsSL', '--retry', '3', '--connect-timeout', '30', '--speed-limit', '1024', '--speed-time', '60',
+            '-o', dest, url
+        ], {});
+        if (code !== 0) {
+            throw new Error(`Could not download ${url}: ${(error as Error).message}`);
+        }
+    }
+}
+
+async function fetchToFile(url: string, dest: string, report: Reporter | undefined, stallMs: number): Promise<void> {
+    const controller = new AbortController();
+    let timer = setTimeout(() => controller.abort(), stallMs);
+    const resetTimer = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => controller.abort(), stallMs);
+    };
+    try {
+        const response = await fetch(url, { redirect: 'follow', signal: controller.signal });
         if (!response.ok || !response.body) {
             throw new Error(`HTTP ${response.status} for ${url}`);
         }
@@ -100,6 +131,7 @@ export async function downloadFile(url: string, dest: string, report?: Reporter)
         let nextReport = 10;
         const source = Readable.fromWeb(response.body as Parameters<typeof Readable.fromWeb>[0]);
         source.on('data', (chunk: Buffer) => {
+            resetTimer();
             done += chunk.length;
             if (report && total > 0) {
                 const percent = Math.floor((done * 100) / total);
@@ -109,12 +141,15 @@ export async function downloadFile(url: string, dest: string, report?: Reporter)
                 }
             }
         });
+        resetTimer();
         await pipeline(source, fs.createWriteStream(dest));
     } catch (error) {
-        const code = await runProcess('curl', ['-fsSL', '--retry', '3', '-o', dest, url], {});
-        if (code !== 0) {
-            throw new Error(`Could not download ${url}: ${(error as Error).message}`);
+        if (controller.signal.aborted) {
+            throw new Error(`no data for ${Math.round(stallMs / 1000)}s`);
         }
+        throw error;
+    } finally {
+        clearTimeout(timer);
     }
 }
 

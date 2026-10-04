@@ -18,6 +18,8 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
   terminal, since it needs your password). An existing distribution is
   detected and left alone. Requires CLI 0.8.0. The command also takes
   options, e.g. `command:latex-forge.installEverything?{"tex":"full"}`.
+- Downloads during setup give up after 30 s without data and retry with
+  curl, so a stalled connection can't hang the setup.
 - Commands that need the CLI now offer **Install automatically** when it's
   missing, then carry on, instead of only copying a command.
 - **Missing LaTeX packages are installed for you**: when a compile —
