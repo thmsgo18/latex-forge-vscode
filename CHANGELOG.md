@@ -4,6 +4,8 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-05
+
 ### Fixed
 
 - No more "Failed to update the LaTeX Forge CLI" when the CLI is a source
