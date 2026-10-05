@@ -99,8 +99,11 @@ async function main(): Promise<void> {
                 project,
                 `--user-data-dir=${userData}`,
                 '--disable-extension=GitHub.copilot-chat',
-                // A fresh profile would otherwise ask the macOS keychain for
-                // its encryption key: an invisible system prompt that blocks.
+                // Keep secrets out of the system keychain. On macOS CI runners
+                // the keychain is locked: the first read (GitHub
+                // authentication, at startup) never returns and the window
+                // never finishes starting. --password-store covers Linux.
+                '--use-inmemory-secretstorage',
                 '--password-store=basic'
             ]
         });
