@@ -4,6 +4,15 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+### Fixed
+
+- No more "Failed to update the LaTeX Forge CLI" when the CLI is a source
+  checkout installed in editable mode: its version label is frozen at
+  install time, so the extension no longer treats it as outdated or tries to
+  upgrade it, and "Install Everything" no longer stops on it. A CLI installed
+  with pip gets the command to update it instead of an error, and if an
+  update leaves another, older copy first on PATH, the extension says so.
+
 ## [1.3.0] - 2026-10-04
 
 ### Added

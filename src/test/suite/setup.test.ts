@@ -5,7 +5,7 @@ import * as http from 'http';
 import * as os from 'os';
 import * as path from 'path';
 import { mergePath, tinytexRoot } from '../../cliEnv';
-import { upgradeCommandFor } from '../../cliUpdater';
+import { manualUpgradeHint, upgradeCommandFor } from '../../cliUpdater';
 import { escapeHtml } from '../../commands/diagnose';
 import { isTexReady, parseDiagnose } from '../../environment';
 import { installCommandForPlatform } from '../../githubDetection';
@@ -181,6 +181,15 @@ suite('Diagnose data', () => {
         assert.deepStrictEqual(upgradeCommandFor('uv'), { command: 'uv', args: ['tool', 'upgrade', 'latex-forge'] });
         assert.deepStrictEqual(upgradeCommandFor('pipx'), { command: 'pipx', args: ['upgrade', 'latex-forge'] });
         assert.strictEqual(upgradeCommandFor('editable'), undefined);
+    });
+
+    test('never tries to upgrade a source checkout, and says how to update the rest', () => {
+        // An editable install's version metadata is frozen at install time.
+        assert.strictEqual(upgradeCommandFor('editable'), undefined);
+        assert.match(manualUpgradeHint('editable'), /source checkout/);
+        assert.match(manualUpgradeHint('pip'), /pip install --upgrade latex-forge/);
+        assert.match(manualUpgradeHint('venv'), /pip install --upgrade latex-forge/);
+        assert.match(manualUpgradeHint('unknown'), /uv tool install --force latex-forge/);
     });
 
     test('escapes CLI output before rendering it', () => {

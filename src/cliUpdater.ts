@@ -119,6 +119,25 @@ export function upgradeCommandFor(method: InstallMethod): { command: string; arg
     }
 }
 
+/**
+ * What to tell the user when the extension can't upgrade the CLI itself.
+ * An editable install is a source checkout: it runs the checkout's code, and
+ * the version in its metadata is frozen at install time, so it is neither
+ * outdated nor upgradable in the usual sense.
+ */
+export function manualUpgradeHint(method: InstallMethod): string {
+    switch (method) {
+        case 'editable':
+            return 'it runs from a source checkout (editable install): update the checkout instead';
+        case 'venv':
+        case 'pip':
+            return 'it was installed with pip: run "python -m pip install --upgrade latex-forge" ' +
+                'with the Python that installed it';
+        default:
+            return 'reinstall it with "uv tool install --force latex-forge"';
+    }
+}
+
 /** Asks the CLI how it was installed (CLI 0.8+), falling back to what's on the machine. */
 async function detectInstallMethod(): Promise<InstallMethod> {
     const result = await execLatexForge(['diagnose', '--json']);
@@ -137,14 +156,11 @@ async function detectInstallMethod(): Promise<InstallMethod> {
  * Upgrades the CLI with the tool that installed it (uv or pipx), streams
  * output to the channel, and resolves with whether it succeeded.
  */
-function runCliUpgrade(outputChannel: vscode.OutputChannel): Promise<boolean> {
-    return detectInstallMethod().then((method) => new Promise((resolve) => {
+function runCliUpgrade(outputChannel: vscode.OutputChannel, method: InstallMethod): Promise<boolean> {
+    return new Promise((resolve) => {
         const upgrade = upgradeCommandFor(method);
         if (!upgrade) {
-            outputChannel.appendLine(
-                `latex-forge was installed with ${method}: upgrade it the same way ` +
-                '(e.g. "pip install --upgrade latex-forge").'
-            );
+            outputChannel.appendLine(`Not updating the LaTeX Forge CLI: ${manualUpgradeHint(method)}.`);
             resolve(false);
             return;
         }
@@ -160,7 +176,23 @@ function runCliUpgrade(outputChannel: vscode.OutputChannel): Promise<boolean> {
         });
 
         child.on('close', (code) => resolve(code === 0));
-    }));
+    });
+}
+
+/**
+ * After an upgrade, checks that the CLI found on PATH is the one that was
+ * upgraded: an older copy installed another way (pip, another Python) can
+ * come first on PATH and keep running.
+ */
+async function warnIfStillBelowMinimum(): Promise<void> {
+    const after = await getInstalledVersion();
+    if (after && isBelowMinimum(after)) {
+        const which = process.platform === 'win32' ? 'where latex-forge' : 'which -a latex-forge';
+        void vscode.window.showWarningMessage(
+            `The LaTeX Forge CLI was updated, but the copy found first on your PATH is still ${after}. ` +
+            `Run "${which}" in a terminal to find it, and uninstall it.`
+        );
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -177,8 +209,13 @@ export async function ensureMinimumCliVersion(outputChannel: vscode.OutputChanne
     if (!installed || !isBelowMinimum(installed)) {
         return true;
     }
+    const method = await detectInstallMethod();
+    if (method === 'editable') {
+        outputChannel.appendLine(`LaTeX Forge CLI reports ${installed}, but ${manualUpgradeHint(method)}.`);
+        return true;
+    }
     outputChannel.appendLine(`LaTeX Forge CLI ${installed} is older than ${MIN_CLI_VERSION}: upgrading it.`);
-    const success = await runCliUpgrade(outputChannel);
+    const success = await runCliUpgrade(outputChannel, method);
     if (success) {
         _onUpdateApplied?.();
     }
@@ -203,19 +240,27 @@ export async function checkMinimumCliVersion(
     // Don't also fire the PyPI "update available" check this session.
     sessionCheckDone = true;
 
-    const choice = await vscode.window.showWarningMessage(
-        `LaTeX Forge CLI ${installed} is older than the minimum version this extension ` +
-        `supports (${MIN_CLI_VERSION}). Some features may not work correctly. Update now?`,
-        'Update now',
-        'Later'
-    );
+    const method = await detectInstallMethod();
+    if (method === 'editable') {
+        outputChannel.appendLine(`LaTeX Forge CLI reports ${installed}, but ${manualUpgradeHint(method)}.`);
+        return true;
+    }
+    const outdated = `LaTeX Forge CLI ${installed} is older than the minimum version this extension ` +
+        `supports (${MIN_CLI_VERSION}). Some features may not work correctly.`;
+    if (!upgradeCommandFor(method)) {
+        void vscode.window.showWarningMessage(`${outdated} To update it, ${manualUpgradeHint(method)}.`);
+        return true;
+    }
+
+    const choice = await vscode.window.showWarningMessage(`${outdated} Update now?`, 'Update now', 'Later');
 
     if (choice === 'Update now') {
         outputChannel.show(true);
-        const success = await runCliUpgrade(outputChannel);
+        const success = await runCliUpgrade(outputChannel, method);
         if (success) {
             _onUpdateApplied?.();
             await vscode.window.showInformationMessage('LaTeX Forge CLI updated successfully.');
+            await warnIfStillBelowMinimum();
         } else {
             await vscode.window.showErrorMessage(
                 'Failed to update the LaTeX Forge CLI. See the "LaTeX Forge" output channel for details.'
@@ -269,21 +314,31 @@ export async function checkForCliUpdate(
         return;
     }
 
+    const method = await detectInstallMethod();
+    if (method === 'editable') {
+        if (force) {
+            await vscode.window.showInformationMessage(`LaTeX Forge CLI: ${manualUpgradeHint(method)}.`);
+        }
+        return;
+    }
+
     // Notify the status bar (or any other subscriber) before showing the dialog.
     _onUpdateAvailable?.(latest);
 
-    const choice = await vscode.window.showInformationMessage(
-        `LaTeX Forge CLI ${latest} is available (installed: ${installed}).`,
-        'Update now',
-        'Later'
-    );
+    const available = `LaTeX Forge CLI ${latest} is available (installed: ${installed}).`;
+    if (!upgradeCommandFor(method)) {
+        await vscode.window.showInformationMessage(`${available} To update it, ${manualUpgradeHint(method)}.`);
+        return;
+    }
+
+    const choice = await vscode.window.showInformationMessage(available, 'Update now', 'Later');
 
     if (choice !== 'Update now') {
         return;
     }
 
     outputChannel.show(true);
-    const success = await runCliUpgrade(outputChannel);
+    const success = await runCliUpgrade(outputChannel, method);
 
     if (success) {
         _onUpdateApplied?.();
