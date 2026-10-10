@@ -14,6 +14,11 @@
 
 This extension is the visual companion of the [LaTeX Forge CLI](https://github.com/thmsgo18/latex-forge): pick a template, name your project, and start writing. The PDF preview is already wired up.
 
+## See it in action
+
+https://github.com/user-attachments/assets/24b4b492-e271-4a96-a629-db1df27909cb
+
+
 ## Getting started
 
 1. Install this extension (click **Install** on the banner above).
