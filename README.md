@@ -18,6 +18,7 @@ This extension is the visual companion of the [LaTeX Forge CLI](https://github.c
 
 https://github.com/user-attachments/assets/24b4b492-e271-4a96-a629-db1df27909cb
 
+[![Watch on YouTube](https://img.shields.io/badge/YouTube-Watch_the_video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=mXMGWlw9qoc)
 
 ## Getting started
 
