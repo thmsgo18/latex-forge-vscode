@@ -4,6 +4,13 @@ All notable changes to the "LaTeX Forge" extension will be documented in this fi
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-10-12
+
+### Changed
+
+- The README now presents the LaTeX Forge teaser video, with a link to watch
+  it on YouTube.
+
 ## [1.3.1] - 2026-10-05
 
 ### Fixed
